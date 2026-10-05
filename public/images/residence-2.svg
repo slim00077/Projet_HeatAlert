@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f9b97a"/><stop offset="1" stop-color="#fde7c8"/></linearGradient></defs>
+  <rect width="600" height="400" fill="url(#s)"/>
+  <rect y="335" width="600" height="65" fill="#cdb48c"/>
+  <rect x="90" y="150" width="190" height="190" fill="#fffaf0"/>
+  <rect x="260" y="80" width="230" height="260" fill="#f1e3cc"/>
+  <rect x="260" y="80" width="230" height="16" fill="#d49a63"/>
+  <g fill="#4f7aa3">
+    <rect x="110" y="175" width="36" height="40"/><rect x="170" y="175" width="36" height="40"/><rect x="230" y="175" width="30" height="40"/>
+    <rect x="110" y="245" width="36" height="40"/><rect x="170" y="245" width="36" height="40"/>
+    <rect x="285" y="120" width="40" height="44"/><rect x="350" y="120" width="40" height="44"/><rect x="415" y="120" width="40" height="44"/>
+    <rect x="285" y="195" width="40" height="44"/><rect x="350" y="195" width="40" height="44"/><rect x="415" y="195" width="40" height="44"/>
+    <rect x="285" y="270" width="40" height="44"/><rect x="415" y="270" width="40" height="44"/>
+  </g>
+  <rect x="350" y="268" width="50" height="72" fill="#7c4a2d"/>
+  <path d="M90 150h190l-20-30H110z" fill="#d97757"/>
+  <g stroke="#5b4630" stroke-width="8" stroke-linecap="round"><path d="M540 340V210"/></g>
+  <g fill="#2f9e5b"><path d="M540 210q-40-10-55 15 30-5 55-5zM540 210q40-10 55 15-30-5-55-5zM540 210q-25-35-5-55 15 25 5 55zM540 210q25-35 5-55-15 25-5 55z"/></g>
+</svg>

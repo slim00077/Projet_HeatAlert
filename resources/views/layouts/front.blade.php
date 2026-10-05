@@ -12,7 +12,7 @@
 
 <body>
 
-    <x-front-navbar />
+    <x-front-navbar :overlay="trim($__env->yieldContent('overlay')) === '1'" />
 
     <main>
         @yield('content')
