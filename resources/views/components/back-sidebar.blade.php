@@ -1,14 +1,17 @@
 <aside class="sidebar">
 
-    <h2>HeatAlert</h2>
+    <h2><x-icon name="sun" /> HeatAlert</h2>
 
     <nav>
-        <a href="{{ url('/admin') }}">Dashboard</a>
-        <a href="#">Heat Alerts</a>
-        <a href="#">Power Outages</a>
-        <a href="#">Cooling Points</a>
-        <a href="#">Advice</a>
-        <a href="#">Users</a>
+        <a href="{{ route('admin.dashboard') }}" @class(['is-active' => request()->routeIs('admin.dashboard')])><x-icon name="grid" /> Dashboard</a>
+        <a href="{{ route('admin.users.index') }}" @class(['is-active' => request()->routeIs('admin.users.*')])><x-icon name="users" /> Users</a>
+        <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])><x-icon name="building" /> Residences</a>
+        <a href="{{ route('resident-reports.index') }}" @class(['is-active' => request()->routeIs('resident-reports.*')])><x-icon name="file" /> Reports</a>
+        <a href="#"><x-icon name="warning" /> Heat Alerts</a>
+        <a href="#"><x-icon name="snow" /> Cooling Points</a>
+        <a href="#"><x-icon name="bolt" /> Power Outages</a>
+        <a href="#"><x-icon name="bulb" /> Advice</a>
+        <a href="#"><x-icon name="cog" /> Settings</a>
     </nav>
 
 </aside>
