@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -28,7 +29,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('residences.index')->with('success', 'Welcome to HeatAlert!');
+        return redirect($this->homeFor($user))->with('success', 'Welcome to HeatAlert!');
     }
 
     public function showLogin(): View
@@ -49,9 +50,19 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        $home = $request->user()->isAdmin() ? route('admin.dashboard') : route('residences.index');
+        return redirect()->intended($this->homeFor($request->user()));
+    }
 
-        return redirect()->intended($home);
+    /**
+     * Admins land on the dashboard, residents on their residences page when it exists.
+     */
+    private function homeFor(User $user): string
+    {
+        if ($user->isAdmin()) {
+            return route('admin.dashboard');
+        }
+
+        return Route::has('residences.index') ? route('residences.index') : url('/');
     }
 
     public function logout(Request $request): RedirectResponse
