@@ -20,7 +20,7 @@
                 @endunless
             @endauth
 
-            <a href="#">Heat Alerts</a>
+            <a href="{{ route('front.alerts.index') }}">Heat Alerts</a>
             <a href="#">Cool Spots</a>
             <a href="#">Advice</a>
             <a href="#">About</a>
