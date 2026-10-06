@@ -7,26 +7,30 @@ use App\Models\ResidentReport;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database. All demo accounts use the password "password".
+     * Seed the application's database. Safe to run several times: existing rows are reused.
+     * All demo accounts use the development-only password "password".
      */
     public function run(): void
     {
-        User::factory()->admin()->create([
-            'name' => 'HeatAlert Admin',
-            'email' => 'admin@heatalert.test',
-        ]);
+        User::where('email', 'admin@heatalert.test')->first()
+            ?? User::factory()->admin()->create([
+                'name' => 'HeatAlert Admin',
+                'email' => 'admin@heatalert.test',
+            ]);
 
         $residents = collect([
             ['Amine Ben Salah', 'amine@heatalert.test'],
             ['Sarra Trabelsi', 'sarra@heatalert.test'],
             ['Karim Mansouri', 'karim@heatalert.test'],
-        ])->map(fn (array $data) => User::factory()->create(['name' => $data[0], 'email' => $data[1]]));
+        ])->map(fn (array $data) => User::where('email', $data[1])->first()
+            ?? User::factory()->create(['name' => $data[0], 'email' => $data[1]]));
 
         $residences = [
             ['Residence Les Palmiers', '12 Avenue Habib Bourguiba', 'Centre Ville', 'Six-floor building with a shared rooftop terrace.'],
@@ -45,23 +49,21 @@ class DatabaseSeeder extends Seeder
         foreach ($residences as $index => [$name, $address, $neighborhood, $description]) {
             $owner = $residents[$index % $residents->count()];
 
-            $residence = Residence::create([
-                'user_id' => $owner->id,
-                'name' => $name,
-                'address' => $address,
-                'neighborhood' => $neighborhood,
-                'description' => $description,
-            ]);
+            $residence = Residence::firstOrCreate(
+                ['user_id' => $owner->id, 'name' => $name],
+                ['address' => $address, 'neighborhood' => $neighborhood, 'description' => $description],
+            );
 
-            foreach (array_slice($reports, 0, 2 + ($index % 2)) as [$title, $text, $status]) {
-                ResidentReport::create([
-                    'residence_id' => $residence->id,
-                    'user_id' => $owner->id,
-                    'title' => $title,
-                    'description' => $text,
-                    'status' => $status,
-                    'reported_at' => now()->subDays(rand(1, 20)),
-                ]);
+            foreach (array_slice($reports, 0, 2 + ($index % 2)) as $reportIndex => [$title, $text, $status]) {
+                ResidentReport::firstOrCreate(
+                    ['residence_id' => $residence->id, 'title' => $title],
+                    [
+                        'user_id' => $owner->id,
+                        'description' => $text,
+                        'status' => $status,
+                        'reported_at' => Carbon::create(2026, 9, 15)->addDays($index * 3 + $reportIndex),
+                    ],
+                );
             }
         }
     }
