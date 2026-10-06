@@ -10,7 +10,8 @@
         <a href="#"><x-icon name="warning" /> Heat Alerts</a>
         <a href="#"><x-icon name="snow" /> Cooling Points</a>
         <a href="#"><x-icon name="bolt" /> Power Outages</a>
-        <a href="#"><x-icon name="bulb" /> Advice</a>
+        <a href="{{ route('admin.advices.index') }}" @class(['is-active' => request()->routeIs('admin.advices.*')])><x-icon name="bulb" /> Advice</a>
+        <a href="{{ route('admin.advice-categories.index') }}" @class(['is-active' => request()->routeIs('admin.advice-categories.*')])><x-icon name="file" /> Advice Categories</a>
         <a href="#"><x-icon name="cog" /> Settings</a>
     </nav>
 

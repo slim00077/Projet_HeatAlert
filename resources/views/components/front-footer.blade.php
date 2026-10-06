@@ -22,7 +22,7 @@
             <a href="#">Heat Alerts</a>
             <a href="#">Power Outages</a>
             <a href="#">Cooling Points</a>
-            <a href="#">Advice</a>
+            <a href="{{ route('advice.index') }}">Advice</a>
 
         </div>
 

@@ -22,7 +22,7 @@
 
             <a href="#">Heat Alerts</a>
             <a href="#">Cool Spots</a>
-            <a href="#">Advice</a>
+            <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*')])>Advice</a>
             <a href="#">About</a>
 
         </nav>

@@ -66,5 +66,7 @@ class DatabaseSeeder extends Seeder
                 );
             }
         }
+
+        $this->call(AdviceSeeder::class);
     }
 }
