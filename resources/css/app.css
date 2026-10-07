@@ -833,6 +833,363 @@ img, svg { max-width: 100%; }
 .back-link { margin-top: 1.5rem; display: flex; gap: 0.6rem; }
 
 /* ==========================================================================
+   Power outage pages
+   ========================================================================== */
+
+.page-shell {
+    padding-block: 3rem;
+}
+
+.page-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+    display: inline-block;
+    color: var(--color-cool-dark);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.info-card,
+.details-card,
+.panel-form,
+.table-card,
+.report-card {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.info-card {
+    display: block;
+    padding: 1.4rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-3px);
+}
+
+.info-card-header,
+.report-header,
+.table-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.muted-text {
+    color: var(--color-ink-soft);
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-ink-soft);
+    font-size: 0.85rem;
+}
+
+.status-badge,
+.severity-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.status-planned,
+.status-pending {
+    background: #e0f2fe;
+    color: var(--color-cool-dark);
+}
+
+.status-in_progress,
+.status-verified {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-resolved,
+.status-closed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.severity-low {
+    background: #e0f2fe;
+    color: var(--color-cool-dark);
+}
+
+.severity-moderate {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.severity-high {
+    background: #ffedd5;
+    color: var(--color-heat-dark);
+}
+
+.severity-critical {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.detail-layout {
+    display: grid;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.details-card,
+.panel-form {
+    padding: 1.5rem;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.meta-grid div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: var(--color-ink-soft);
+}
+
+.meta-grid strong {
+    color: var(--color-ink);
+}
+
+.panel-form {
+    display: block;
+}
+
+.panel-form h2,
+.table-header-row h2 {
+    margin-bottom: 1rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field.full-width {
+    grid-column: 1 / -1;
+}
+
+.field label {
+    font-weight: 600;
+    color: var(--color-ink);
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.9rem;
+    font: inherit;
+    background: #fff;
+    color: var(--color-ink);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: 2px solid rgba(59, 130, 246, 0.2);
+    border-color: var(--color-cool);
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.error-text {
+    color: #b91c1c;
+    font-size: 0.8rem;
+}
+
+.alert-success {
+    background: #ecfdf5;
+    color: #166534;
+    border: 1px solid #a7f3d0;
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.table-card {
+    overflow: hidden;
+}
+
+.table-card table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-card th,
+.table-card td {
+    text-align: left;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: top;
+}
+
+.report-message {
+    min-width: 18rem;
+    max-width: 30rem;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.report-owner-actions {
+    display: flex;
+    align-items: end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.table-card thead th {
+    background: var(--color-bg-soft);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-ink-soft);
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.table-actions a,
+.link-button {
+    color: var(--color-cool-dark);
+    font-weight: 600;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.link-button {
+    color: #b91c1c;
+}
+
+.pagination-wrap {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination-wrap nav {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pagination-wrap .page-link,
+.pagination-wrap .page-item .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.1rem;
+    min-height: 2.1rem;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    background: #fff;
+    color: var(--color-ink);
+}
+
+.pagination-wrap .page-item.active .page-link {
+    background: var(--color-cool-dark);
+    border-color: var(--color-cool-dark);
+    color: #fff;
+}
+
+.empty-state {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--color-ink-soft);
+}
+
+.report-section {
+    margin-top: 2rem;
+}
+
+.report-card {
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.report-card h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.report-card span {
+    color: var(--color-ink-soft);
+    font-size: 0.8rem;
+}
+
+.admin-details {
+    margin-bottom: 1.5rem;
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 

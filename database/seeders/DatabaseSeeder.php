@@ -67,6 +67,10 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        $this->call(AdviceSeeder::class);
+        $this->call([
+            AdviceSeeder::class,
+            PowerOutageSeeder::class,
+            OutageReportSeeder::class,
+        ]);
     }
 }
