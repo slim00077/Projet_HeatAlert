@@ -19,7 +19,7 @@
 
             <h4>HeatAlert</h4>
 
-            <a href="#">Heat Alerts</a>
+            <a href="{{ route('front.alerts.index') }}">Heat Alerts</a>
             <a href="#">Power Outages</a>
             <a href="#">Cooling Points</a>
             <a href="{{ route('advice.index') }}">Advice</a>

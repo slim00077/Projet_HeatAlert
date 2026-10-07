@@ -48,9 +48,13 @@ Route::middleware(['auth', 'admin'])
             ->names('admin.advices');
         Route::resource('advice-categories', AdminAdviceCategoryController::class)
             ->names('admin.advice-categories');
+        Route::resource('neighborhoods', \App\Http\Controllers\NeighborhoodController::class)->names('admin.neighborhoods');
+        Route::resource('alerts', \App\Http\Controllers\HeatAlertController::class)->names('admin.alerts');
     });
 
 Route::middleware('auth')->group(function () {
     Route::resource('residences', ResidenceController::class);
     Route::resource('resident-reports', ResidentReportController::class);
 });
+
+Route::get('/heat-alerts', [\App\Http\Controllers\FrontHeatAlertController::class, 'index'])->name('front.alerts.index');
