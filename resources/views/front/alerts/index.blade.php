@@ -9,6 +9,14 @@
         <p class="text-gray-600 mt-2">Consultez les alertes chaleur en cours dans votre quartier.</p>
     </div>
 
+    <x-flash-messages />
+
+    @auth
+        <div class="mb-6 flex justify-center">
+            <a href="{{ auth()->user()->isAdmin() ? route('admin.alerts.create') : route('front.alerts.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ajouter une alerte</a>
+        </div>
+    @endauth
+
     <!-- Filtre par quartier -->
     <div class="mb-8 flex justify-center">
         <form action="{{ route('front.alerts.index') }}" method="GET" class="flex items-center space-x-2">
@@ -29,6 +37,9 @@
         @forelse($alerts as $alert)
             <div class="bg-white rounded-lg shadow-md overflow-hidden border-t-4 
                 {{ $alert->severity_level == 'high' ? 'border-red-500' : ($alert->severity_level == 'medium' ? 'border-yellow-500' : 'border-green-500') }}">
+                @if($alert->imageUrl())
+                    <img src="{{ $alert->imageUrl() }}" alt="{{ $alert->title }}" class="w-full h-40 object-cover" loading="lazy">
+                @endif
                 <div class="p-6">
                     <div class="flex justify-between items-start mb-4">
                         <h2 class="text-xl font-bold text-gray-800">{{ $alert->title }}</h2>
@@ -40,6 +51,11 @@
                     <p class="text-sm text-gray-600 mb-2">
                         <span class="font-semibold">Quartier:</span> {{ $alert->neighborhood->name ?? 'N/A' }}
                     </p>
+                    @if($alert->residence_name)
+                        <p class="text-sm text-gray-600 mb-2">
+                            <span class="font-semibold">Résidence:</span> {{ $alert->residence_name }}
+                        </p>
+                    @endif
                     <p class="text-gray-700 mb-4">{{ $alert->description }}</p>
                     
                     <div class="text-sm text-gray-500">

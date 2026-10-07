@@ -29,7 +29,19 @@
     @error('content')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 
+<div class="form-group @error('image') has-error @enderror">
+    <label for="image">Image <span class="field-hint">(optional)</span></label>
+    <input type="file" id="image" name="image" accept="image/*">
+    @if (isset($advice) && $advice->image_path)
+        <div class="media-preview">
+            <img src="{{ $advice->imageUrl() }}" alt="Current picture">
+            <small>Current file. Choose a new one to replace it.</small>
+        </div>
+    @endif
+    @error('image')<p class="field-error">{{ $message }}</p>@enderror
+</div>
+
 <div class="form-actions">
     <button type="submit" class="btn btn-primary">Save Advice</button>
-    <a href="{{ route('admin.advices.index') }}" class="btn btn-outline">Cancel</a>
+    <a href="{{ $cancelUrl ?? route('admin.advices.index') }}" class="btn btn-outline">Cancel</a>
 </div>

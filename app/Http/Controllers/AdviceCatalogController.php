@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Advice;
 use App\Models\AdviceCategory;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -47,5 +48,31 @@ class AdviceCatalogController extends Controller
             ->get();
 
         return view('front.advice.show', compact('advice', 'relatedAdvices'));
+    }
+
+    public function create(): View
+    {
+        return view('front.advice.create', ['categories' => AdviceCategory::orderBy('name')->get()]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'advice_category_id' => ['required', 'integer', 'exists:advice_categories,id'],
+            'title' => ['required', 'string', 'max:255'],
+            'summary' => ['nullable', 'string', 'max:500'],
+            'content' => ['required', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
+        ]);
+
+        $data = collect($validated)->except('image')->all();
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('advice', 'public');
+        }
+
+        $advice = Advice::create($data);
+
+        return redirect()->route('advice.show', $advice)->with('success', 'Advice created successfully.');
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Advice;
 use App\Models\AdviceCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class AdminAdviceController extends Controller
@@ -42,7 +43,7 @@ class AdminAdviceController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $advice = Advice::create($this->validated($request));
+        $advice = Advice::create($this->validated($request) + $this->storeImage($request));
 
         return redirect()->route('admin.advices.show', $advice)->with('success', 'Advice created successfully.');
     }
@@ -64,13 +65,17 @@ class AdminAdviceController extends Controller
 
     public function update(Request $request, Advice $advice): RedirectResponse
     {
-        $advice->update($this->validated($request));
+        $advice->update($this->validated($request) + $this->storeImage($request, $advice));
 
         return redirect()->route('admin.advices.show', $advice)->with('success', 'Advice updated successfully.');
     }
 
     public function destroy(Advice $advice): RedirectResponse
     {
+        if ($advice->image_path) {
+            Storage::disk('public')->delete($advice->image_path);
+        }
+
         $advice->delete();
 
         return redirect()->route('admin.advices.index')->with('success', 'Advice deleted successfully.');
@@ -81,11 +86,32 @@ class AdminAdviceController extends Controller
      */
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'advice_category_id' => ['required', 'integer', 'exists:advice_categories,id'],
             'title' => ['required', 'string', 'max:255'],
             'summary' => ['nullable', 'string', 'max:500'],
             'content' => ['required', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
         ]);
+
+        return collect($validated)->except('image')->all();
+    }
+
+    /**
+     * Stores the uploaded picture and returns the column to save.
+     *
+     * @return array<string, string>
+     */
+    private function storeImage(Request $request, ?Advice $advice = null): array
+    {
+        if (! $request->hasFile('image')) {
+            return [];
+        }
+
+        if ($advice?->image_path) {
+            Storage::disk('public')->delete($advice->image_path);
+        }
+
+        return ['image_path' => $request->file('image')->store('advice', 'public')];
     }
 }

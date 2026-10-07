@@ -8,7 +8,7 @@
 
 <x-flash-messages />
 
-<form action="{{ route('admin.advices.update', $advice) }}" method="POST" class="form-card">
+<form action="{{ route('admin.advices.update', $advice) }}" method="POST" enctype="multipart/form-data" class="form-card">
     @csrf
     @method('PUT')
     @include('partials.advice-form')

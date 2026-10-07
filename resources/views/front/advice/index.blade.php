@@ -25,6 +25,10 @@
             </form>
         </div>
 
+        @auth
+            <p style="margin-bottom:1rem"><a href="{{ auth()->user()->isAdmin() ? route('admin.advices.create') : route('advice.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add Advice</a></p>
+        @endauth
+
         <nav class="filter-tabs" aria-label="Advice categories">
             <a href="{{ route('advice.index', request()->except('category', 'page')) }}" @class(['is-active' => ! isset($filters['category'])])>All advice</a>
             @foreach ($categories as $category)
@@ -38,6 +42,9 @@
         <div class="advice-grid">
             @forelse ($advices as $advice)
                 <article class="advice-card">
+                    @if ($advice->imageUrl())
+                        <img src="{{ $advice->imageUrl() }}" alt="{{ $advice->title }}" loading="lazy" style="width:100%;height:160px;object-fit:cover;border-radius:var(--radius-md)">
+                    @endif
                     <span class="chip">{{ $advice->category->name }}</span>
                     <h2>{{ $advice->title }}</h2>
                     <p class="advice-summary">{{ \Illuminate\Support\Str::limit($advice->summary ?? $advice->content, 180) }}</p>

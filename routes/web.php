@@ -6,12 +6,22 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdviceCatalogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FrontHeatAlertController;
+use App\Http\Controllers\HeatAlertController;
+use App\Http\Controllers\NeighborhoodController;
 use App\Http\Controllers\ResidenceController;
 use App\Http\Controllers\ResidentReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('front.home');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/advice/create', [AdviceCatalogController::class, 'create'])->name('advice.create');
+    Route::post('/advice', [AdviceCatalogController::class, 'store'])->name('advice.store');
+    Route::get('/heat-alerts/create', [FrontHeatAlertController::class, 'create'])->name('front.alerts.create');
+    Route::post('/heat-alerts', [FrontHeatAlertController::class, 'store'])->name('front.alerts.store');
 });
 
 Route::get('/advice', [AdviceCatalogController::class, 'index'])
@@ -48,8 +58,8 @@ Route::middleware(['auth', 'admin'])
             ->names('admin.advices');
         Route::resource('advice-categories', AdminAdviceCategoryController::class)
             ->names('admin.advice-categories');
-        Route::resource('neighborhoods', \App\Http\Controllers\NeighborhoodController::class)->names('admin.neighborhoods');
-        Route::resource('alerts', \App\Http\Controllers\HeatAlertController::class)->names('admin.alerts');
+        Route::resource('neighborhoods', NeighborhoodController::class)->names('admin.neighborhoods');
+        Route::resource('alerts', HeatAlertController::class)->names('admin.alerts');
     });
 
 Route::middleware('auth')->group(function () {
@@ -57,4 +67,4 @@ Route::middleware('auth')->group(function () {
     Route::resource('resident-reports', ResidentReportController::class);
 });
 
-Route::get('/heat-alerts', [\App\Http\Controllers\FrontHeatAlertController::class, 'index'])->name('front.alerts.index');
+Route::get('/heat-alerts', [FrontHeatAlertController::class, 'index'])->name('front.alerts.index');
