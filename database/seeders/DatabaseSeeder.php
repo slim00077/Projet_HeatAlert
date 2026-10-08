@@ -68,6 +68,8 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call([
+            HeatAlertSeeder::class,
+            CoolSpotSeeder::class,
             AdviceSeeder::class,
             PowerOutageSeeder::class,
             OutageReportSeeder::class,

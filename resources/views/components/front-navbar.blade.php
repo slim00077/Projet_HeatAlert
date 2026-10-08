@@ -22,13 +22,10 @@
             @endauth
 
             <a href="{{ route('front.alerts.index') }}">Heat Alerts</a>
-<<<<<<< HEAD
-=======
             <a href="{{ route('front.power-outages.index') }}" @class(['is-active' => request()->routeIs('front.power-outages.*')])>Power Outages</a>
->>>>>>> origin/feature/power-outages
             <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
             <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*')])>Advice</a>
-            <a href="#">About</a>
+            <a href="{{ url('/') }}#about">About</a>
 
         </nav>
 

@@ -22,8 +22,8 @@ class OutageReportFactory extends Factory
         return [
             'power_outage_id' => PowerOutage::factory(),
             'user_id' => User::factory(),
-            'reporter_name' => fake()->name(),
-            'email' => fake()->email(),
+            'reporter_name' => fn (array $attributes) => User::find($attributes['user_id'])->name,
+            'email' => fn (array $attributes) => User::find($attributes['user_id'])->email,
             'description' => fake()->paragraph(),
             'status' => 'pending',
         ];
