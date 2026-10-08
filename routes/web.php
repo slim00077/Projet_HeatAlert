@@ -1,17 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\CoolSpotController as AdminCoolSpotController;
+use App\Http\Controllers\Admin\CoolSpotTypeController as AdminCoolSpotTypeController;
 use App\Http\Controllers\AdminAdviceCategoryController;
 use App\Http\Controllers\AdminAdviceController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdviceCatalogController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CoolSpotController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontHeatAlertController;
 use App\Http\Controllers\HeatAlertController;
 use App\Http\Controllers\NeighborhoodController;
-use App\Http\Controllers\Admin\CoolSpotController as AdminCoolSpotController;
-use App\Http\Controllers\Admin\CoolSpotTypeController as AdminCoolSpotTypeController;
-use App\Http\Controllers\CoolSpotController;
 use App\Http\Controllers\ResidenceController;
 use App\Http\Controllers\ResidentReportController;
 use Illuminate\Support\Facades\Route;
@@ -26,7 +26,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/heat-alerts/create', [FrontHeatAlertController::class, 'create'])->name('front.alerts.create');
     Route::post('/heat-alerts', [FrontHeatAlertController::class, 'store'])->name('front.alerts.store');
-    
+
 });
 
 Route::get('/advice', [AdviceCatalogController::class, 'index'])
@@ -36,6 +36,11 @@ Route::get('/advice/{advice}', [AdviceCatalogController::class, 'show'])
     ->name('advice.show');
 
 // Cool Spots - Front Office
+Route::middleware('auth')->group(function () {
+    Route::get('/cool-spots/create', [CoolSpotController::class, 'create'])->name('cool-spots.create');
+    Route::post('/cool-spots', [CoolSpotController::class, 'store'])->name('cool-spots.store');
+});
+
 Route::get('/cool-spots', [CoolSpotController::class, 'index'])
     ->name('cool-spots.index');
 

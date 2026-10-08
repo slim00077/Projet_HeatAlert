@@ -21,7 +21,7 @@
             @endauth
 
             <a href="{{ route('front.alerts.index') }}">Heat Alerts</a>
-            <a href="#">Cool Spots</a>
+            <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
             <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*')])>Advice</a>
             <a href="#">About</a>
 

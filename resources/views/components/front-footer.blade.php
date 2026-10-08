@@ -21,7 +21,7 @@
 
             <a href="{{ route('front.alerts.index') }}">Heat Alerts</a>
             <a href="#">Power Outages</a>
-            <a href="#">Cooling Points</a>
+            <a href="{{ route('cool-spots.index') }}">Cooling Points</a>
             <a href="{{ route('advice.index') }}">Advice</a>
 
         </div>

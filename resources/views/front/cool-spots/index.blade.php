@@ -30,6 +30,9 @@
                 @if (request()->hasAny(['q', 'type', 'accessible']))
                     <a href="{{ route('cool-spots.index') }}" class="btn btn-outline">Reset</a>
                 @endif
+                @auth
+                    <a href="{{ auth()->user()->isAdmin() ? route('admin.cool-spots.create') : route('cool-spots.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add Cooling Point</a>
+                @endauth
             </div>
         </div>
 

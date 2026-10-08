@@ -59,7 +59,7 @@
     <div class="container hero-features">
 
         <x-feature-card title="Heat Alerts" icon="warning" tone="coral">Latest warnings and updates</x-feature-card>
-        <x-feature-card title="Cooling Points" icon="snow" tone="blue">Find nearby cool spots</x-feature-card>
+        <x-feature-card title="Cooling Points" icon="snow" tone="blue" href="{{ route('cool-spots.index') }}">Find nearby cool spots</x-feature-card>
         <x-feature-card title="Power Outages" icon="bolt" tone="purple">Report and view outages</x-feature-card>
         <x-feature-card title="Practical Advice" icon="bulb" tone="green" href="{{ route('advice.index') }}">Tips to stay safe</x-feature-card>
 
