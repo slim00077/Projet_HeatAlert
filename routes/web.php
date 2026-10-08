@@ -11,16 +11,29 @@ use App\Http\Controllers\CoolSpotController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontHeatAlertController;
 use App\Http\Controllers\HeatAlertController;
+use App\Http\Controllers\MyOutageReportController;
 use App\Http\Controllers\NeighborhoodController;
+use App\Http\Controllers\OutageReportController;
+use App\Http\Controllers\PowerOutageController;
 use App\Http\Controllers\ResidenceController;
 use App\Http\Controllers\ResidentReportController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('front.home');
-});
+Route::get('/', fn () => view('front.home'));
+
+Route::get('/outages', [PowerOutageController::class, 'publicIndex'])->name('front.power-outages.index');
+Route::get('/outages/{powerOutage}', [PowerOutageController::class, 'publicShow'])->name('front.power-outages.show');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/outages/{powerOutage}/reports', [OutageReportController::class, 'publicStore'])
+        ->name('front.power-outages.reports.store');
+    Route::get('/my-outage-reports', [MyOutageReportController::class, 'index'])
+        ->name('my-outage-reports.index');
+    Route::patch('/my-outage-reports/{outageReport}', [MyOutageReportController::class, 'update'])
+        ->name('my-outage-reports.update');
+    Route::delete('/my-outage-reports/{outageReport}', [MyOutageReportController::class, 'destroy'])
+        ->name('my-outage-reports.destroy');
+
     Route::get('/advice/create', [AdviceCatalogController::class, 'create'])->name('advice.create');
     Route::post('/advice', [AdviceCatalogController::class, 'store'])->name('advice.store');
 
@@ -85,6 +98,26 @@ Route::middleware(['auth', 'admin'])
 
         Route::resource('alerts', HeatAlertController::class)
             ->names('admin.alerts');
+
+        Route::get('/power-outages', [PowerOutageController::class, 'index'])
+            ->name('admin.power-outages.index');
+        Route::get('/power-outages/create', [PowerOutageController::class, 'create'])
+            ->name('admin.power-outages.create');
+        Route::post('/power-outages', [PowerOutageController::class, 'store'])
+            ->name('admin.power-outages.store');
+        Route::get('/power-outages/{powerOutage}', [PowerOutageController::class, 'show'])
+            ->name('admin.power-outages.show');
+        Route::get('/power-outages/{powerOutage}/edit', [PowerOutageController::class, 'edit'])
+            ->name('admin.power-outages.edit');
+        Route::put('/power-outages/{powerOutage}', [PowerOutageController::class, 'update'])
+            ->name('admin.power-outages.update');
+        Route::delete('/power-outages/{powerOutage}', [PowerOutageController::class, 'destroy'])
+            ->name('admin.power-outages.destroy');
+
+        Route::patch('/outage-reports/{outageReport}/status', [OutageReportController::class, 'updateStatus'])
+            ->name('admin.outage-reports.status');
+        Route::delete('/outage-reports/{outageReport}', [OutageReportController::class, 'adminDestroy'])
+            ->name('admin.outage-reports.destroy');
 
         // Cool Spots - Back Office
         Route::name('admin.')->group(function () {

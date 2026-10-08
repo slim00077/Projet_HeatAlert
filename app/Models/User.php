@@ -61,4 +61,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ResidentReport::class);
     }
+
+    public function outageReports(): HasMany
+    {
+        return $this->hasMany(OutageReport::class);
+    }
 }
