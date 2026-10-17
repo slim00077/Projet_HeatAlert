@@ -2,16 +2,49 @@
 
 HeatAlert est une application web qui aide les habitants à anticiper les fortes chaleurs et trouver des informations utiles. 
 
-## Contribution : Membre 1 (Alertes Chaleur)
+## Contribution : Membre 1 (Alertes Chaleur, Quartiers, IA, Authentification)
 Réalisé par **Jasser Nahali**
 
-Cette section du projet concerne le module principal de gestion des alertes de chaleur. Les fonctionnalités suivantes ont été implémentées :
+### Fonctionnalités avancées
+- **Météo réelle (Open-Meteo)** : prévisions par quartier, alertes automatiques (35 °C = moyenne, 40 °C = élevée), commande `php artisan weather:sync` planifiée toutes les 3 heures.
+- **Carte interactive (OpenStreetMap / Leaflet, Mapbox en option)** : zones colorées par niveau de risque, température, population, résidences du quartier, alertes actives, signalement d'un point chaud par clic sur la carte.
+- **Bandeau de danger** au-dessus de la barre de navigation lorsqu'une alerte élevée est active.
+- **Notifications** aux habitants du quartier (mail + base de données, via la file d'attente), API JSON `GET /api/v1/alerts/active` et `GET /api/v1/neighborhoods`.
+- **Rôles** : résident, gestionnaire de résidences (crée les résidences, validées par l'admin, puis ajoute les habitants) et administrateur.
 
-- **Gestion des Quartiers :** Interface permettant aux administrateurs de définir et de gérer les différents quartiers de la ville.
-- **Gestion des Alertes Chaleur :** Système permettant d'ajouter, modifier et supprimer des alertes de chaleur (faible, moyenne, élevée) pour des quartiers spécifiques, avec des dates de début et de fin.
-- **Espace Administrateur (Back-office) :** Un tableau de bord complet avec des formulaires sécurisés pour administrer les alertes et les quartiers.
-- **Espace Public (Front-office) :** Une page dédiée aux habitants pour consulter facilement les alertes actives et à venir, avec la possibilité de filtrer par quartier.
-- **Données de Test :** Ajout de données pré-remplies (Seeders) avec plusieurs scénarios d'alertes (en cours, passées, futures) pour faciliter le test et la démonstration de l'application.
+### Fonctionnalités IA (Claude)
+- **Conseiller chaleur** : bref de sécurité par quartier et question libre depuis la carte.
+- **Rédaction assistée** du titre et de la description d'une alerte dans le back-office.
+- Clé `ANTHROPIC_API_KEY` dans `.env` ; sans clé, un texte de secours basé sur des règles est utilisé et indiqué comme tel.
+
+### Gestion des utilisateurs (Laravel Fortify)
+Inscription, connexion, déconnexion, vérification d'e-mail, réinitialisation du mot de passe (jeton expirant), rôles contrôlés côté serveur (middleware + policies), authentification à deux facteurs (QR code TOTP + codes de récupération), profil (informations, mot de passe, photo, suppression du compte).
+
+### DevOps
+- `Dockerfile` multi-étapes (assets Vite, dépendances, PHP-FPM, nginx) et `docker-compose.yml` (application, nginx, MySQL, worker de file d'attente, planificateur).
+- GitHub Actions : `ci.yml` (Pint, Pest, build de l'image) et `deploy.yml` (publication de l'image sur GHCR depuis `main`).
+
+```
+cp .env.docker.example .env.docker      # puis renseigner APP_KEY (php artisan key:generate --show)
+docker compose up --build
+docker compose exec app php artisan migrate:fresh --seed
+# application : http://localhost:8080
+```
+
+### Lancer en local
+```
+composer install && npm install
+cp .env.example .env && php artisan key:generate
+php artisan migrate:fresh --seed
+npm run build            # ou npm run dev
+php artisan serve        # + php artisan queue:work et php artisan schedule:work
+```
+Comptes de démonstration (mot de passe `password`) : `admin@heatalert.test`, `sami.manager@heatalert.test`, `leila.manager@heatalert.test`, `amine@heatalert.test`.
+
+Tests : `php artisan test` (Pest).
+
+### Workflow Git
+Une branche par membre (`jasser`, `aziz`, `NizarChaieb`) fusionnée dans `develop` par Pull Request (modèle fourni dans `.github/pull_request_template.md`), commits au format conventionnel (`feat:`, `fix:`, `ci:`...), CI obligatoire avant fusion.
 
 ---
 

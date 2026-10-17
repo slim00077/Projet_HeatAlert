@@ -27,7 +27,7 @@
 
             <div class="hero-buttons">
                 <a href="{{ route('front.alerts.index') }}" class="btn btn-primary btn-large">View Heat Alerts</a>
-                <a href="#" class="btn btn-ghost btn-large">Learn More <x-icon name="arrow" /></a>
+                <a href="{{ route('pages.about') }}" class="btn btn-ghost btn-large">Learn More <x-icon name="arrow" /></a>
             </div>
 
         </div>

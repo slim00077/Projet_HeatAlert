@@ -25,7 +25,7 @@
             <a href="{{ route('front.alerts.index') }}" @class(['is-active' => request()->routeIs('front.alerts.*')])>Heat Alerts</a>
             <a href="#">Cool Spots</a>
             <a href="#">Advice</a>
-            <a href="#">About</a>
+            <a href="{{ route('pages.about') }}" @class(['is-active' => request()->routeIs('pages.about')])>About</a>
 
         </nav>
 

@@ -30,9 +30,9 @@
 
             <h4>Help</h4>
 
-            <a href="#">About</a>
-            <a href="#">Contact</a>
-            <a href="#">Emergency Information</a>
+            <a href="{{ route('pages.about') }}">About</a>
+            <a href="mailto:contact@heatalert.test">Contact</a>
+            <a href="{{ route('pages.emergency') }}">Emergency Information</a>
 
         </div>
 

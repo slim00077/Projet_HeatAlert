@@ -8,6 +8,7 @@ use App\Http\Controllers\HeatAlertController;
 use App\Http\Controllers\MapAlertController;
 use App\Http\Controllers\MapDataController;
 use App\Http\Controllers\NeighborhoodController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidenceApprovalController;
 use App\Http\Controllers\ResidenceController;
@@ -82,5 +83,8 @@ Route::get('/map/data', MapDataController::class)->name('map.data');
 Route::post('/map/alerts', [MapAlertController::class, 'store'])
     ->middleware(['auth', 'verified', 'throttle:10,1'])
     ->name('map.alerts.store');
+
+Route::get('/about', [PageController::class, 'about'])->name('pages.about');
+Route::get('/emergency', [PageController::class, 'emergency'])->name('pages.emergency');
 
 Route::get('/heat-alerts', [FrontHeatAlertController::class, 'index'])->name('front.alerts.index');
