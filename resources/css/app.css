@@ -856,3 +856,74 @@ img, svg { max-width: 100%; }
 .media-preview small { color: var(--muted); font-size: 0.78rem; }
 .media-hero { margin-bottom: 1.5rem; }
 .media-hero img, .media-hero video { max-height: 420px; border-radius: var(--radius-lg); margin-top: 0; }
+
+/* ==========================================================================
+   Heat alerts & neighborhoods
+   ========================================================================== */
+
+.status-active { background: var(--coral-soft); color: var(--coral-dark); }
+.status-upcoming { background: var(--blue-soft); color: #1d4ed8; }
+.status-expired { background: #f1f5f9; color: var(--muted); }
+
+.severity-badge { display: inline-flex; align-items: center; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+.severity-badge.soft-orange { color: #b45309; }
+
+.filter-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: end; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.9rem 1rem; margin-bottom: 1rem; }
+.filter-bar .filter-field { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.75rem; color: var(--muted); font-weight: 600; }
+.filter-bar input, .filter-bar select { padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: var(--radius-md); font: inherit; font-size: 0.88rem; background: #fff; color: var(--ink); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field-error { margin: 0.3rem 0 0; font-size: 0.8rem; color: var(--coral-dark); }
+
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.detail-grid dt { font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.detail-grid dd { margin: 0.15rem 0 0; font-weight: 600; }
+.tips-list { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; }
+.pagination-wrap { margin-top: 1rem; }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 0.8rem; height: 170px; padding-top: 0.5rem; }
+.bar-chart .bar-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 0.3rem; font-size: 0.75rem; color: var(--muted); }
+.bar-chart .bar { width: 100%; max-width: 46px; min-height: 4px; border-radius: 0.5rem 0.5rem 0 0; background: var(--coral); }
+.bar-chart b { color: var(--ink); }
+
+.alert-map { height: 380px; border-radius: var(--radius-lg); border: 1px solid var(--border); margin-bottom: 1.5rem; z-index: 0; }
+.alert-card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border); border-top: 4px solid var(--border); padding: 1.4rem; }
+.alert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+.alert-card h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+.alert-card .meta { color: var(--muted); font-size: 0.85rem; margin: 0.2rem 0; }
+.alert-card details { margin-top: 0.8rem; font-size: 0.88rem; }
+.alert-card summary { cursor: pointer; font-weight: 600; color: var(--coral-dark); }
+
+@media (max-width: 560px) {
+    .form-row { grid-template-columns: 1fr; }
+}
+
+/* Danger banner (above the navbars) and map reporting */
+.site-header.is-overlay { top: auto; }
+
+.danger-banner { position: relative; z-index: 60; background: #b91c1c; color: #fff; font-size: 0.88rem; }
+.danger-banner-inner { display: flex; align-items: center; gap: 1rem; padding: 0.55rem 3rem 0.55rem 1.2rem; }
+.danger-banner strong { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
+.danger-banner .icon { width: 1.1rem; height: 1.1rem; }
+.danger-banner ul { display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; list-style: none; margin: 0; padding: 0; }
+.danger-banner a { color: #fff; text-decoration: underline; }
+.danger-banner-close { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: none; border: 0; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer; }
+
+.map-toolbar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-bottom: 0.7rem; }
+.map-toolbar .map-hint { color: var(--muted); font-size: 0.85rem; }
+.alert-map.is-picking { cursor: crosshair; }
+.alert-map.is-tall { height: 520px; }
+.temp-pin { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 50%; color: #fff; font-weight: 800; font-size: 0.8rem; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
+.map-form { min-width: 240px; display: grid; gap: 0.45rem; }
+.map-form label { font-size: 0.75rem; font-weight: 600; display: grid; gap: 0.15rem; }
+.map-form input, .map-form select, .map-form textarea { padding: 0.4rem 0.5rem; border: 1px solid var(--border); border-radius: 0.5rem; font: inherit; font-size: 0.85rem; }
+.map-form .map-form-error { color: var(--coral-dark); font-size: 0.78rem; }
+.residence-list { margin: 0; padding-left: 1rem; max-height: 110px; overflow-y: auto; font-size: 0.82rem; }
+
+/* Roles, approvals */
+.status-approved { background: var(--green-soft); color: #047857; }
+.status-rejected { background: var(--coral-soft); color: var(--coral-dark); }
+.nav-count { display: inline-grid; place-items: center; min-width: 1.2rem; height: 1.2rem; padding: 0 0.3rem; margin-left: 0.3rem; border-radius: 999px; background: var(--coral); color: #fff; font-size: 0.7rem; font-weight: 700; }
+.role-pill { padding: 0.2rem 0.65rem; border-radius: 999px; background: var(--orange-soft); color: #b45309; font-size: 0.75rem; font-weight: 700; }
+.inline-input { padding: 0.45rem 0.7rem; border: 1px solid var(--border); border-radius: var(--radius-md); font: inherit; font-size: 0.85rem; min-width: 200px; }
+.members-panel { margin-bottom: 1.5rem; }

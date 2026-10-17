@@ -8,9 +8,12 @@
     <title>@yield('title', 'HeatAlert')</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
 </head>
 
 <body>
+
+    <x-danger-banner />
 
     <x-front-navbar :overlay="trim($__env->yieldContent('overlay')) === '1'" />
 
@@ -20,6 +23,7 @@
 
     <x-front-footer />
 
+    @stack('scripts')
 </body>
 
 </html>

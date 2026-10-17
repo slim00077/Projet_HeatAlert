@@ -2,57 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\NeighborhoodRequest;
 use App\Models\Neighborhood;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class NeighborhoodController extends Controller
 {
-    public function index()
+    public function index(Request $request): View
     {
-        $neighborhoods = Neighborhood::all();
-        return view('admin.neighborhoods.index', compact('neighborhoods'));
+        $search = trim((string) $request->query('search'));
+
+        $neighborhoods = Neighborhood::query()
+            ->with('activeAlerts')
+            ->withCount(['heatAlerts', 'residences'])
+            ->when($search !== '', fn ($query) => $query->where('name', 'like', "%{$search}%"))
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.neighborhoods.index', compact('neighborhoods', 'search'));
     }
 
-    public function create()
+    public function create(): View
     {
-        return view('admin.neighborhoods.create');
+        return view('admin.neighborhoods.create', ['neighborhood' => new Neighborhood]);
     }
 
-    public function store(Request $request)
+    public function store(NeighborhoodRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+        $neighborhood = Neighborhood::create($request->validated());
+
+        return redirect()->route('admin.neighborhoods.show', $neighborhood)->with('success', 'Neighborhood created.');
+    }
+
+    public function show(Neighborhood $neighborhood): View
+    {
+        $neighborhood->load('activeAlerts')->loadCount('residences');
+
+        return view('admin.neighborhoods.show', [
+            'neighborhood' => $neighborhood,
+            'alerts' => $neighborhood->heatAlerts()->latest('start_date')->limit(10)->get(),
         ]);
-
-        Neighborhood::create($validated);
-        return redirect()->route('admin.neighborhoods.index')->with('success', 'Quartier créé avec succès.');
     }
 
-    public function show(Neighborhood $neighborhood)
-    {
-        return view('admin.neighborhoods.show', compact('neighborhood'));
-    }
-
-    public function edit(Neighborhood $neighborhood)
+    public function edit(Neighborhood $neighborhood): View
     {
         return view('admin.neighborhoods.edit', compact('neighborhood'));
     }
 
-    public function update(Request $request, Neighborhood $neighborhood)
+    public function update(NeighborhoodRequest $request, Neighborhood $neighborhood): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $neighborhood->update($request->validated());
 
-        $neighborhood->update($validated);
-        return redirect()->route('admin.neighborhoods.index')->with('success', 'Quartier mis à jour.');
+        return redirect()->route('admin.neighborhoods.show', $neighborhood)->with('success', 'Neighborhood updated.');
     }
 
-    public function destroy(Neighborhood $neighborhood)
+    public function destroy(Neighborhood $neighborhood): RedirectResponse
     {
         $neighborhood->delete();
-        return redirect()->route('admin.neighborhoods.index')->with('success', 'Quartier supprimé.');
+
+        return redirect()->route('admin.neighborhoods.index')->with('success', 'Neighborhood deleted.');
     }
 }

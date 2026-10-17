@@ -1,66 +1,109 @@
 @extends('layouts.back')
 
-@section('title', 'Liste des Alertes Chaleur')
+@section('title', 'HeatAlert - Heat Alerts')
 
 @section('content')
-<div class="container mx-auto px-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Alertes Chaleur</h1>
-        <a href="{{ route('admin.alerts.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Ajouter une alerte</a>
+
+<div class="page-header">
+    <div>
+        <h1>Heat Alerts</h1>
+        <p class="subtitle">Create and follow heat alerts by neighborhood</p>
     </div>
-
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <div class="bg-white shadow-md rounded my-6">
-        <table class="min-w-full table-auto">
-            <thead>
-                <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                    <th class="py-3 px-6 text-left">Titre</th>
-                    <th class="py-3 px-6 text-left">Quartier</th>
-                    <th class="py-3 px-6 text-left">Sévérité</th>
-                    <th class="py-3 px-6 text-left">Début</th>
-                    <th class="py-3 px-6 text-left">Fin</th>
-                    <th class="py-3 px-6 text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-600 text-sm font-light">
-                @forelse($alerts as $alert)
-                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                    <td class="py-3 px-6 text-left whitespace-nowrap font-medium">{{ $alert->title }}</td>
-                    <td class="py-3 px-6 text-left">{{ $alert->neighborhood->name ?? 'N/A' }}</td>
-                    <td class="py-3 px-6 text-left">
-                        @if($alert->severity_level == 'high')
-                            <span class="bg-red-200 text-red-600 py-1 px-3 rounded-full text-xs">Élevée</span>
-                        @elseif($alert->severity_level == 'medium')
-                            <span class="bg-yellow-200 text-yellow-600 py-1 px-3 rounded-full text-xs">Moyenne</span>
-                        @else
-                            <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs">Faible</span>
-                        @endif
-                    </td>
-                    <td class="py-3 px-6 text-left">{{ $alert->start_date->format('d/m/Y H:i') }}</td>
-                    <td class="py-3 px-6 text-left">{{ $alert->end_date ? $alert->end_date->format('d/m/Y H:i') : '-' }}</td>
-                    <td class="py-3 px-6 text-center">
-                        <div class="flex item-center justify-center space-x-2">
-                            <a href="{{ route('admin.alerts.edit', $alert) }}" class="text-blue-500 hover:text-blue-700">Modifier</a>
-                            <form action="{{ route('admin.alerts.destroy', $alert) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr ?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700">Supprimer</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="py-3 px-6 text-center">Aucune alerte chaleur trouvée.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+    <div class="toolbar">
+        <form action="{{ route('admin.weather.sync') }}" method="POST">
+            @csrf
+            <button type="submit" class="btn btn-outline"><x-icon name="sun" /> Refresh weather</button>
+        </form>
+        <a href="{{ route('admin.alerts.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add Alert</a>
     </div>
 </div>
+
+<x-flash-messages />
+
+@include('partials.neighborhood-map', ['detailUrl' => route('admin.neighborhoods.show', '__ID__')])
+
+<form action="{{ route('admin.alerts.index') }}" method="GET" class="filter-bar">
+    <label class="filter-field">Search
+        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Title...">
+    </label>
+    <label class="filter-field">Neighborhood
+        <select name="neighborhood_id">
+            <option value="">All</option>
+            @foreach ($neighborhoods as $neighborhood)
+                <option value="{{ $neighborhood->id }}" @selected(($filters['neighborhood_id'] ?? '') == $neighborhood->id)>{{ $neighborhood->name }}</option>
+            @endforeach
+        </select>
+    </label>
+    <label class="filter-field">Severity
+        <select name="severity">
+            <option value="">All</option>
+            @foreach (\App\Enums\Severity::cases() as $severity)
+                <option value="{{ $severity->value }}" @selected(($filters['severity'] ?? '') === $severity->value)>{{ $severity->label() }}</option>
+            @endforeach
+        </select>
+    </label>
+    <label class="filter-field">Status
+        <select name="status">
+            <option value="">All</option>
+            @foreach ([\App\Models\HeatAlert::STATUS_ACTIVE, \App\Models\HeatAlert::STATUS_UPCOMING, \App\Models\HeatAlert::STATUS_EXPIRED] as $status)
+                <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ ucfirst($status) }}</option>
+            @endforeach
+        </select>
+    </label>
+    <label class="filter-field">From
+        <input type="date" name="from" value="{{ $filters['from'] ?? '' }}">
+    </label>
+    <label class="filter-field">To
+        <input type="date" name="to" value="{{ $filters['to'] ?? '' }}">
+    </label>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{{ route('admin.alerts.index') }}" class="btn btn-outline btn-sm">Reset</a>
+</form>
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Neighborhood</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($alerts as $alert)
+                <tr>
+                    <td>
+                        <a href="{{ route('admin.alerts.show', $alert) }}">{{ $alert->title }}</a>
+                        @if ($alert->isAutomatic())<span class="severity-badge soft-blue">Auto</span>@elseif ($alert->isCommunity())<span class="severity-badge soft-purple">Community</span>@endif
+                    </td>
+                    <td>{{ $alert->neighborhood->name }}</td>
+                    <td><x-severity-badge :severity="$alert->severity_level" /></td>
+                    <td><x-alert-status-badge :alert="$alert" /></td>
+                    <td>{{ $alert->start_date->format('d/m/Y H:i') }}</td>
+                    <td>{{ $alert->end_date?->format('d/m/Y H:i') ?? '-' }}</td>
+                    <td class="actions">
+                        <a href="{{ route('admin.alerts.show', $alert) }}" class="icon-action" title="View"><x-icon name="eye" /></a>
+                        <a href="{{ route('admin.alerts.edit', $alert) }}" class="icon-action is-edit" title="Edit"><x-icon name="pencil" /></a>
+                        <form action="{{ route('admin.alerts.destroy', $alert) }}" method="POST" onsubmit="return confirm('Delete this heat alert?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="icon-action is-danger" title="Delete"><x-icon name="trash" /></button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="7">No heat alerts found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-wrap">{{ $alerts->links() }}</div>
+
 @endsection

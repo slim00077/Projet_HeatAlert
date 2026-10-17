@@ -8,9 +8,12 @@
     <title>@yield('title', 'HeatAlert Admin')</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
 </head>
 
 <body>
+
+    <x-danger-banner />
 
     <div class="admin-body">
 
@@ -28,6 +31,7 @@
 
     </div>
 
+    @stack('scripts')
 </body>
 
 </html>

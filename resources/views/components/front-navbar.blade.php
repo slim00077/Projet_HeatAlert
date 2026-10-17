@@ -14,13 +14,15 @@
             <a href="{{ url('/') }}" @class(['is-active' => request()->is('/')])>Home</a>
 
             @auth
-                @unless (auth()->user()->isAdmin())
+                @if (auth()->user()->isManager())
+                    <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])>Managed Residences</a>
+                @elseif (auth()->user()->isResident())
                     <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])>My Residences</a>
                     <a href="{{ route('resident-reports.index') }}" @class(['is-active' => request()->routeIs('resident-reports.*')])>My Reports</a>
-                @endunless
+                @endif
             @endauth
 
-            <a href="{{ route('front.alerts.index') }}">Heat Alerts</a>
+            <a href="{{ route('front.alerts.index') }}" @class(['is-active' => request()->routeIs('front.alerts.*')])>Heat Alerts</a>
             <a href="#">Cool Spots</a>
             <a href="#">Advice</a>
             <a href="#">About</a>
@@ -31,7 +33,12 @@
 
             @auth
                 @if (auth()->user()->isAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="login-link">Admin</a>
+                    @php
+                        $pendingResidences = \App\Models\Residence::pending()->count();
+                    @endphp
+                    <a href="{{ route('admin.dashboard') }}" class="login-link">Admin @if ($pendingResidences > 0)<span class="nav-count" title="Residences waiting for approval">{{ $pendingResidences }}</span>@endif</a>
+                @else
+                    <span class="role-pill">{{ auth()->user()->isManager() ? 'Manager' : 'Resident' }}</span>
                 @endif
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf

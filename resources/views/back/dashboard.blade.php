@@ -27,6 +27,9 @@
     <x-stat-card label="Residents" :value="$stats['Total Residents']" icon="users" tone="green" />
     <x-stat-card label="Residences" :value="$stats['Total Residences']" icon="home" tone="orange" />
     <x-stat-card label="Total Reports" :value="$stats['Total Reports']" icon="file" tone="purple" />
+    <a href="{{ route('admin.approvals.index') }}" style="text-decoration:none;color:inherit">
+        <x-stat-card label="Residences to approve" :value="$stats['Pending Residences']" icon="check" tone="coral" />
+    </a>
 </div>
 
 <div class="dashboard-grid is-status">
@@ -35,7 +38,43 @@
     <x-stat-card label="Resolved" :value="$stats['Resolved Reports']" icon="check" tone="green" />
 </div>
 
+<div class="dashboard-grid">
+    <x-stat-card label="Active Alerts" :value="$alertStats['active']" icon="warning" tone="coral" />
+    <x-stat-card label="High Severity" :value="$alertStats['high']" icon="bolt" tone="orange" />
+    <x-stat-card label="Upcoming Alerts" :value="$alertStats['upcoming']" icon="clock" tone="blue" />
+    <x-stat-card label="Most Affected" :value="$mostAffected?->name ?? 'None'" icon="pin" tone="purple" />
+</div>
+
 <div class="dashboard-panels">
+
+    <section class="panel">
+        <div class="panel-head"><h2>Active Alerts by Severity</h2><a href="{{ route('admin.alerts.index') }}">View all</a></div>
+        <ul class="legend">
+            @foreach (\App\Enums\Severity::cases() as $severity)
+                <li><span class="dot" style="background:{{ $severity->color() }}"></span> {{ $severity->label() }} <b>{{ $alertStats['bySeverity'][$severity->value] }}</b></li>
+            @endforeach
+        </ul>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Alerts per Month</h2></div>
+        @php
+            $maxMonthly = max(max($monthlyAlerts), 1);
+        @endphp
+        <div class="bar-chart">
+            @foreach ($monthlyAlerts as $month => $count)
+                <div class="bar-col">
+                    <b>{{ $count }}</b>
+                    <div class="bar" style="height: {{ $count / $maxMonthly * 100 }}%"></div>
+                    {{ $month }}
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+</div>
+
+<div class="dashboard-panels" style="margin-top: 1rem">
 
     <section class="panel">
         <div class="panel-head"><h2>Reports by Status</h2></div>

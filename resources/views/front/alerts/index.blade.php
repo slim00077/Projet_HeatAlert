@@ -1,60 +1,61 @@
 @extends('layouts.front')
 
-@section('title', 'Alertes Chaleur en cours')
+@section('title', 'HeatAlert - Heat Alerts')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-8 text-center">
-        <h1 class="text-3xl font-bold text-gray-800">Alertes Chaleur</h1>
-        <p class="text-gray-600 mt-2">Consultez les alertes chaleur en cours dans votre quartier.</p>
-    </div>
 
-    <!-- Filtre par quartier -->
-    <div class="mb-8 flex justify-center">
-        <form action="{{ route('front.alerts.index') }}" method="GET" class="flex items-center space-x-2">
-            <select name="neighborhood_id" class="border rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Tous les quartiers</option>
-                @foreach($neighborhoods as $neighborhood)
-                    <option value="{{ $neighborhood->id }}" {{ request('neighborhood_id') == $neighborhood->id ? 'selected' : '' }}>
-                        {{ $neighborhood->name }}
-                    </option>
-                @endforeach
-            </select>
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filtrer</button>
-        </form>
-    </div>
+<section class="page-section">
+    <div class="container">
 
-    <!-- Liste des alertes -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @forelse($alerts as $alert)
-            <div class="bg-white rounded-lg shadow-md overflow-hidden border-t-4 
-                {{ $alert->severity_level == 'high' ? 'border-red-500' : ($alert->severity_level == 'medium' ? 'border-yellow-500' : 'border-green-500') }}">
-                <div class="p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">{{ $alert->title }}</h2>
-                        <span class="px-3 py-1 text-xs font-semibold rounded-full 
-                            {{ $alert->severity_level == 'high' ? 'bg-red-100 text-red-800' : ($alert->severity_level == 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') }}">
-                            {{ ucfirst($alert->severity_level) }}
-                        </span>
+        <div class="page-title">
+            <div>
+                <h1>Heat Alerts</h1>
+                <p>Follow the heat alerts in your neighborhood and the advice to stay safe.</p>
+            </div>
+            <form action="{{ route('front.alerts.index') }}" method="GET" class="search-form">
+                <select name="neighborhood_id" onchange="this.form.submit()">
+                    <option value="">All neighborhoods</option>
+                    @foreach ($neighborhoods as $neighborhood)
+                        <option value="{{ $neighborhood->id }}" @selected($neighborhoodId === $neighborhood->id)>{{ $neighborhood->name }}</option>
+                    @endforeach
+                </select>
+                <noscript><button type="submit" class="btn btn-primary">Filter</button></noscript>
+            </form>
+        </div>
+
+        @include('partials.neighborhood-map', ['selectedId' => $neighborhoodId])
+
+        <div class="alert-grid">
+            @forelse ($alerts as $alert)
+                <article class="alert-card" style="border-top-color: {{ $alert->severity_level->color() }}">
+                    <div class="toolbar" style="justify-content: space-between">
+                        <x-severity-badge :severity="$alert->severity_level" />
+                        <x-alert-status-badge :alert="$alert" />
                     </div>
-                    <p class="text-sm text-gray-600 mb-2">
-                        <span class="font-semibold">Quartier:</span> {{ $alert->neighborhood->name ?? 'N/A' }}
+                    <h2>{{ $alert->title }}</h2>
+                    <p class="meta"><x-icon name="pin" /> {{ $alert->neighborhood->name }}@if ($alert->temperature !== null) · {{ $alert->temperature }} °C @endif</p>
+                    @if ($alert->description)
+                        <p>{{ $alert->description }}</p>
+                    @endif
+                    <p class="meta">
+                        From {{ $alert->start_date->format('d/m/Y H:i') }}
+                        @if ($alert->end_date) until {{ $alert->end_date->format('d/m/Y H:i') }} @endif
                     </p>
-                    <p class="text-gray-700 mb-4">{{ $alert->description }}</p>
-                    
-                    <div class="text-sm text-gray-500">
-                        <p><strong>Début:</strong> {{ $alert->start_date->format('d/m/Y à H:i') }}</p>
-                        @if($alert->end_date)
-                            <p><strong>Fin prévue:</strong> {{ $alert->end_date->format('d/m/Y à H:i') }}</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        @empty
-            <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 bg-gray-50 rounded-lg">
-                <p class="text-gray-500 text-lg">Aucune alerte chaleur en cours. Tout va bien !</p>
-            </div>
-        @endforelse
+                    <details>
+                        <summary>How to stay safe</summary>
+                        <ul class="tips-list">
+                            @foreach ($alert->severity_level->recommendations() as $tip)
+                                <li>{{ $tip }}</li>
+                            @endforeach
+                        </ul>
+                    </details>
+                </article>
+            @empty
+                <p class="empty-state">No heat alert at the moment. Stay hydrated anyway!</p>
+            @endforelse
+        </div>
+
     </div>
-</div>
+</section>
+
 @endsection

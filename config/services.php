@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    // Optional: with a token the map also offers Mapbox street/satellite layers (OpenStreetMap is always available).
+    'mapbox' => [
+        'token' => env('MAPBOX_TOKEN'),
+    ],
+
+    'open_meteo' => [
+        'url' => env('OPEN_METEO_URL', 'https://api.open-meteo.com/v1/forecast'),
+        // Path to a CA bundle when PHP has no curl.cainfo configured (common on Windows).
+        'ca_bundle' => env('HTTP_CA_BUNDLE'),
+    ],
+
 ];

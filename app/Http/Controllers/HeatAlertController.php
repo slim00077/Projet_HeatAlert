@@ -2,68 +2,101 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Severity;
+use App\Http\Requests\HeatAlertRequest;
 use App\Models\HeatAlert;
 use App\Models\Neighborhood;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class HeatAlertController extends Controller
 {
-    public function index()
+    public function index(Request $request): View
     {
-        $alerts = HeatAlert::with('neighborhood')->get();
-        return view('admin.alerts.index', compact('alerts'));
-    }
-
-    public function create()
-    {
-        $neighborhoods = Neighborhood::all();
-        return view('admin.alerts.create', compact('neighborhoods'));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'neighborhood_id' => 'required|exists:neighborhoods,id',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'severity_level' => 'required|string|in:low,medium,high',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'neighborhood_id' => ['nullable', 'integer'],
+            'severity' => ['nullable', 'in:'.implode(',', array_column(Severity::cases(), 'value'))],
+            'status' => ['nullable', 'in:'.implode(',', [HeatAlert::STATUS_UPCOMING, HeatAlert::STATUS_ACTIVE, HeatAlert::STATUS_EXPIRED])],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
         ]);
 
-        HeatAlert::create($validated);
-        return redirect()->route('admin.alerts.index')->with('success', 'Alerte chaleur créée avec succès.');
-    }
+        $alerts = HeatAlert::query()
+            ->with('neighborhood')
+            ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where('title', 'like', "%{$search}%"))
+            ->when($filters['neighborhood_id'] ?? null, fn ($query, $id) => $query->where('neighborhood_id', $id))
+            ->when($filters['severity'] ?? null, fn ($query, string $severity) => $query->where('severity_level', $severity))
+            ->when($filters['status'] ?? null, fn ($query, string $status) => match ($status) {
+                HeatAlert::STATUS_UPCOMING => $query->upcoming(),
+                HeatAlert::STATUS_EXPIRED => $query->expired(),
+                default => $query->active(),
+            })
+            ->when($filters['from'] ?? null, fn ($query, string $from) => $query->whereDate('start_date', '>=', $from))
+            ->when($filters['to'] ?? null, fn ($query, string $to) => $query->whereDate('start_date', '<=', $to))
+            ->latest('start_date')
+            ->paginate(10)
+            ->withQueryString();
 
-    public function show(HeatAlert $heatAlert)
-    {
-        return view('admin.alerts.show', compact('heatAlert'));
-    }
-
-    public function edit(HeatAlert $heatAlert)
-    {
-        $neighborhoods = Neighborhood::all();
-        return view('admin.alerts.edit', compact('heatAlert', 'neighborhoods'));
-    }
-
-    public function update(Request $request, HeatAlert $heatAlert)
-    {
-        $validated = $request->validate([
-            'neighborhood_id' => 'required|exists:neighborhoods,id',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'severity_level' => 'required|string|in:low,medium,high',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
+        return view('admin.alerts.index', [
+            'alerts' => $alerts,
+            'neighborhoods' => Neighborhood::orderBy('name')->get(),
+            'filters' => $filters,
         ]);
-
-        $heatAlert->update($validated);
-        return redirect()->route('admin.alerts.index')->with('success', 'Alerte chaleur mise à jour.');
     }
 
-    public function destroy(HeatAlert $heatAlert)
+    public function create(): View
+    {
+        return view('admin.alerts.create', [
+            'heatAlert' => new HeatAlert,
+            'neighborhoods' => Neighborhood::orderBy('name')->get(),
+        ]);
+    }
+
+    public function store(HeatAlertRequest $request): RedirectResponse
+    {
+        $heatAlert = HeatAlert::create($request->validated());
+
+        $notified = $heatAlert->isActive() ? $heatAlert->load('neighborhood')->notifyResidents() : 0;
+
+        $message = 'Heat alert created.';
+        if ($notified > 0) {
+            $message .= " {$notified} resident(s) are being notified.";
+        }
+
+        return redirect()->route('admin.alerts.show', $heatAlert)->with('success', $message);
+    }
+
+    public function show(HeatAlert $heatAlert): View
+    {
+        $heatAlert->load('neighborhood');
+
+        return view('admin.alerts.show', [
+            'heatAlert' => $heatAlert,
+            'residentsCount' => $heatAlert->neighborhood->residents()->count(),
+        ]);
+    }
+
+    public function edit(HeatAlert $heatAlert): View
+    {
+        return view('admin.alerts.edit', [
+            'heatAlert' => $heatAlert,
+            'neighborhoods' => Neighborhood::orderBy('name')->get(),
+        ]);
+    }
+
+    public function update(HeatAlertRequest $request, HeatAlert $heatAlert): RedirectResponse
+    {
+        $heatAlert->update($request->validated());
+
+        return redirect()->route('admin.alerts.show', $heatAlert)->with('success', 'Heat alert updated.');
+    }
+
+    public function destroy(HeatAlert $heatAlert): RedirectResponse
     {
         $heatAlert->delete();
-        return redirect()->route('admin.alerts.index')->with('success', 'Alerte chaleur supprimée.');
+
+        return redirect()->route('admin.alerts.index')->with('success', 'Heat alert deleted.');
     }
 }

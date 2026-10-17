@@ -19,11 +19,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::where('email', 'admin@heatalert.test')->first()
-            ?? User::factory()->admin()->create([
-                'name' => 'HeatAlert Admin',
-                'email' => 'admin@heatalert.test',
-            ]);
+        $this->call(AdminSeeder::class);
 
         $residents = collect([
             ['Amine Ben Salah', 'amine@heatalert.test'],
@@ -66,5 +62,8 @@ class DatabaseSeeder extends Seeder
                 );
             }
         }
+
+        $this->call(HeatAlertSeeder::class);
+        $this->call(ManagerSeeder::class);
     }
 }

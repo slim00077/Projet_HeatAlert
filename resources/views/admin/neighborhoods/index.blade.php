@@ -1,54 +1,71 @@
 @extends('layouts.back')
 
-@section('title', 'Liste des Quartiers')
+@section('title', 'HeatAlert - Neighborhoods')
 
 @section('content')
-<div class="container mx-auto px-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Quartiers</h1>
-        <a href="{{ route('admin.neighborhoods.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Ajouter un quartier</a>
+
+<div class="page-header">
+    <div>
+        <h1>Neighborhoods</h1>
+        <p class="subtitle">Areas monitored for heat risk</p>
     </div>
-
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <div class="bg-white shadow-md rounded my-6">
-        <table class="min-w-full table-auto">
-            <thead>
-                <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                    <th class="py-3 px-6 text-left">ID</th>
-                    <th class="py-3 px-6 text-left">Nom</th>
-                    <th class="py-3 px-6 text-left">Description</th>
-                    <th class="py-3 px-6 text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-600 text-sm font-light">
-                @forelse($neighborhoods as $neighborhood)
-                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                    <td class="py-3 px-6 text-left whitespace-nowrap">{{ $neighborhood->id }}</td>
-                    <td class="py-3 px-6 text-left">{{ $neighborhood->name }}</td>
-                    <td class="py-3 px-6 text-left">{{ Str::limit($neighborhood->description, 50) }}</td>
-                    <td class="py-3 px-6 text-center">
-                        <div class="flex item-center justify-center space-x-2">
-                            <a href="{{ route('admin.neighborhoods.edit', $neighborhood) }}" class="text-blue-500 hover:text-blue-700">Modifier</a>
-                            <form action="{{ route('admin.neighborhoods.destroy', $neighborhood) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr ?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700">Supprimer</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="4" class="py-3 px-6 text-center">Aucun quartier trouvé.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+    <div class="toolbar">
+        <form action="{{ route('admin.neighborhoods.index') }}" method="GET" class="search-form">
+            <input type="text" name="search" value="{{ $search }}" placeholder="Search by name...">
+            <button type="submit" class="btn btn-outline" aria-label="Search"><x-icon name="search" /></button>
+        </form>
+        <a href="{{ route('admin.neighborhoods.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add Neighborhood</a>
     </div>
 </div>
+
+<x-flash-messages />
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Current risk</th>
+                <th>Population</th>
+                <th>Residences</th>
+                <th>Alerts</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($neighborhoods as $neighborhood)
+                @php($risk = $neighborhood->currentRisk())
+                <tr>
+                    <td><a href="{{ route('admin.neighborhoods.show', $neighborhood) }}">{{ $neighborhood->name }}</a></td>
+                    <td>
+                        @if ($risk)
+                            <x-severity-badge :severity="$risk" />
+                        @else
+                            <span class="severity-badge soft-green">None</span>
+                        @endif
+                    </td>
+                    <td>{{ $neighborhood->population !== null ? number_format($neighborhood->population) : '-' }}</td>
+                    <td>{{ $neighborhood->residences_count }}</td>
+                    <td>{{ $neighborhood->heat_alerts_count }}</td>
+                    <td class="actions">
+                        <a href="{{ route('admin.neighborhoods.show', $neighborhood) }}" class="icon-action" title="View"><x-icon name="eye" /></a>
+                        <a href="{{ route('admin.neighborhoods.edit', $neighborhood) }}" class="icon-action is-edit" title="Edit"><x-icon name="pencil" /></a>
+                        <form action="{{ route('admin.neighborhoods.destroy', $neighborhood) }}" method="POST" onsubmit="return confirm('Delete this neighborhood and its heat alerts?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="icon-action is-danger" title="Delete"><x-icon name="trash" /></button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6">No neighborhoods found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-wrap">{{ $neighborhoods->links() }}</div>
+
 @endsection
