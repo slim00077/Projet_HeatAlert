@@ -24,4 +24,14 @@ class ResidenceFactory extends Factory
             'description' => fake()->optional()->sentence(),
         ];
     }
+
+    public function pending(): static
+    {
+        return $this->state(fn () => ['status' => Residence::STATUS_PENDING]);
+    }
+
+    public function rejected(string $reason = 'Address could not be verified.'): static
+    {
+        return $this->state(fn () => ['status' => Residence::STATUS_REJECTED, 'rejection_reason' => $reason]);
+    }
 }

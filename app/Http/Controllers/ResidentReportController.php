@@ -4,15 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Residence;
 use App\Models\ResidentReport;
+use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-class ResidentReportController extends Controller
+class ResidentReportController extends Controller implements HasMiddleware
 {
+    /**
+     * Residence managers do not file or follow resident reports.
+     */
+    public static function middleware(): array
+    {
+        return [fn (Request $request, Closure $next) => $request->user()?->isManager() ? abort(403) : $next($request)];
+    }
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -112,9 +122,7 @@ class ResidentReportController extends Controller
     {
         $user = $request->user();
 
-        return Residence::when(! $user->isAdmin(), fn ($query) => $query->where('user_id', $user->id))
-            ->orderBy('name')
-            ->get();
+        return Residence::accessibleBy($user)->orderBy('name')->get();
     }
 
     /**
@@ -126,8 +134,7 @@ class ResidentReportController extends Controller
     {
         $user = $request->user();
 
-        $residenceExists = Rule::exists('residences', 'id')
-            ->when(! $user->isAdmin(), fn ($rule) => $rule->where('user_id', $user->id));
+        $residenceExists = Rule::in(Residence::accessibleBy($user)->pluck('id')->all());
 
         $rules = [
             'residence_id' => ['required', $residenceExists],

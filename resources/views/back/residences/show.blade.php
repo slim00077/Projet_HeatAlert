@@ -14,6 +14,8 @@
 
 <x-flash-messages />
 
+@include('partials.residence-status')
+
 <div class="form-card">
     <div class="media-preview" style="margin-bottom:1rem">
         @if ($residence->hasVideo())
@@ -25,10 +27,13 @@
     <p><strong>Owner:</strong> {{ $residence->user->name }}</p>
     <p><strong>Address:</strong> {{ $residence->address }}</p>
     <p><strong>Neighborhood:</strong> {{ $residence->neighborhood }}</p>
+    <p><strong>Status:</strong> <x-status-badge :status="ucfirst($residence->status)" /></p>
     <p><strong>Description:</strong> {{ $residence->description ?? '-' }}</p>
 </div>
 
-<div class="page-header">
+@include('partials.residence-members')
+
+<div class="page-header" style="margin-top: 1.5rem">
     <h2>Reports</h2>
     <a href="{{ route('resident-reports.create', ['residence_id' => $residence->id]) }}" class="btn btn-primary">Add Report</a>
 </div>

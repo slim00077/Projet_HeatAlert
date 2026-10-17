@@ -28,6 +28,7 @@
                 <th>Name</th>
                 <th>Address</th>
                 <th>Neighborhood</th>
+                <th>Status</th>
                 <th>Reports</th>
                 <th>Owner</th>
                 <th>Actions</th>
@@ -40,6 +41,7 @@
                     <td><a href="{{ route('residences.show', $residence) }}">{{ $residence->name }}</a></td>
                     <td>{{ $residence->address }}</td>
                     <td>{{ $residence->neighborhood }}</td>
+                    <td><x-status-badge :status="ucfirst($residence->status)" /></td>
                     <td>{{ $residence->resident_reports_count }}</td>
                     <td>{{ $residence->user->name }}</td>
                     <td class="actions">
@@ -54,7 +56,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7">No residences found.</td>
+                    <td colspan="8">No residences found.</td>
                 </tr>
             @endforelse
         </tbody>

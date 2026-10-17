@@ -7,7 +7,7 @@
 <div class="page-header">
     <div>
         <h1>Users</h1>
-        <p class="subtitle">All registered accounts and their roles</p>
+        <p class="subtitle">All registered accounts, their roles and the neighborhood of each residence manager</p>
     </div>
 </div>
 
@@ -21,6 +21,8 @@
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Neighborhood</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -29,11 +31,15 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
-                    <td><span class="status-badge {{ $user->isAdmin() ? 'status-admin' : 'status-resolved' }}">{{ ucfirst($user->role) }}</span></td>
+                    <td><span class="status-badge {{ $user->isAdmin() ? 'status-admin' : ($user->isManager() ? 'status-in-progress' : 'status-resolved') }}">{{ ucfirst($user->role) }}</span></td>
+                    <td>{{ $user->neighborhood?->name ?? '-' }}</td>
+                    <td class="actions">
+                        <a href="{{ route('admin.users.edit', $user) }}" class="icon-action is-edit" title="Change role"><x-icon name="pencil" /></a>
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4">No users yet.</td>
+                    <td colspan="6">No users yet.</td>
                 </tr>
             @endforelse
         </tbody>

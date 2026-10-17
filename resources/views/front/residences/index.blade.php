@@ -17,7 +17,9 @@
                     <input type="text" name="search" value="{{ $search }}" placeholder="Search residences...">
                     <button type="submit" class="btn btn-primary" aria-label="Search"><x-icon name="search" /></button>
                 </form>
-                <a href="{{ route('residences.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add Residence</a>
+                @can('create', \App\Models\Residence::class)
+                    <a href="{{ route('residences.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add Residence</a>
+                @endcan
             </div>
         </div>
 
@@ -34,7 +36,7 @@
                         @endif
                     </div>
                     <div class="residence-body">
-                        <h3>{{ $residence->name }}</h3>
+                        <h3>{{ $residence->name }} @unless ($residence->isApproved())<x-status-badge :status="ucfirst($residence->status)" />@endunless</h3>
                         <div class="meta-row"><x-icon name="pin" /> {{ $residence->address }}</div>
                         <div class="meta-row"><x-icon name="building" /> {{ $residence->neighborhood }}</div>
                         <p class="residence-desc">{{ \Illuminate\Support\Str::limit($residence->description ?? 'No description provided.', 90) }}</p>
@@ -43,12 +45,16 @@
                             <span class="chip">{{ $residence->resident_reports_count }} report(s)</span>
                         </div>
                         <div class="card-actions" style="margin-top:0.9rem">
-                            <a href="{{ route('residences.edit', $residence) }}" class="icon-action is-edit" title="Edit"><x-icon name="pencil" /></a>
-                            <form action="{{ route('residences.destroy', $residence) }}" method="POST" onsubmit="return confirm('Delete this residence and its reports?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="icon-action is-danger" title="Delete"><x-icon name="trash" /></button>
-                            </form>
+                            @can('update', $residence)
+                                <a href="{{ route('residences.edit', $residence) }}" class="icon-action is-edit" title="Edit"><x-icon name="pencil" /></a>
+                            @endcan
+                            @can('delete', $residence)
+                                <form action="{{ route('residences.destroy', $residence) }}" method="POST" onsubmit="return confirm('Delete this residence and its reports?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="icon-action is-danger" title="Delete"><x-icon name="trash" /></button>
+                                </form>
+                            @endcan
                         </div>
                     </div>
                 </article>

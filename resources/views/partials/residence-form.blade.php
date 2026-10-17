@@ -25,7 +25,17 @@
 
 <div class="form-group @error('neighborhood') has-error @enderror">
     <label for="neighborhood">Neighborhood</label>
-    <input type="text" id="neighborhood" name="neighborhood" value="{{ old('neighborhood', $residence->neighborhood ?? '') }}">
+    <select id="neighborhood" name="neighborhood">
+        @if (count($neighborhoods) !== 1)
+            <option value="">-- Select a neighborhood --</option>
+        @endif
+        @foreach ($neighborhoods as $name)
+            <option value="{{ $name }}" @selected(old('neighborhood', $residence->neighborhood ?? '') === $name)>{{ $name }}</option>
+        @endforeach
+    </select>
+    @if (auth()->user()->isManager())
+        <p class="field-hint">Residences can only be created in the neighborhood assigned to you. An admin reviews each new residence.</p>
+    @endif
     @error('neighborhood')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 

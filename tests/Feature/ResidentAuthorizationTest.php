@@ -49,12 +49,13 @@ it('only lists and shows own residences', function () {
     $this->actingAs($this->resident)->delete(route('residences.destroy', $this->otherResidence))->assertForbidden();
 });
 
-it('creates residences for the logged-in resident only', function () {
+it('no longer lets residents create residences (managers do, with admin approval)', function () {
+    $this->actingAs($this->resident)->get('/residences/create')->assertForbidden();
     $this->actingAs($this->resident)->post('/residences', [
-        'name' => 'Mine', 'address' => '1 Street', 'neighborhood' => 'Centre', 'user_id' => $this->other->id,
-    ])->assertRedirect(route('residences.index'))->assertSessionHas('success', 'Residence created successfully.');
+        'name' => 'Mine', 'address' => '1 Street', 'neighborhood' => 'Centre',
+    ])->assertForbidden();
 
-    expect(Residence::where('name', 'Mine')->first()->user_id)->toBe($this->resident->id);
+    expect(Residence::where('name', 'Mine')->exists())->toBeFalse();
 });
 
 it('searches residences', function () {
@@ -115,10 +116,12 @@ it('renders the redesigned pages', function () {
     $this->get('/login')->assertOk();
     $this->get('/register')->assertOk();
 
-    foreach (['/residences', '/resident-reports', '/residences/create', '/resident-reports/create', route('residences.show', $this->residence), route('resident-reports.show', $report), route('resident-reports.edit', $report)] as $url) {
+    foreach (['/residences', '/resident-reports', '/resident-reports/create', route('residences.show', $this->residence), route('resident-reports.show', $report), route('resident-reports.edit', $report)] as $url) {
         $this->actingAs($this->resident)->get($url)->assertOk();
         $this->actingAs($this->admin)->get($url)->assertOk();
     }
+
+    $this->actingAs($this->admin)->get('/residences/create')->assertOk();
 
     $this->actingAs($this->admin)->get('/resident-reports?search='.urlencode($report->title))->assertOk()->assertSee($report->title);
 });
