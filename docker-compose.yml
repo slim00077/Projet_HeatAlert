@@ -12,6 +12,11 @@ services:
       RUN_MIGRATIONS: "true"
     volumes:
       - storage:/var/www/html/storage
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
     depends_on:
       db:
         condition: service_healthy
@@ -26,27 +31,32 @@ services:
     volumes:
       - storage:/var/www/html/storage:ro
     depends_on:
-      - app
+      app:
+        condition: service_healthy
 
   queue:
     image: heatalert-app
+    pull_policy: never  # built by the app service
     restart: unless-stopped
     command: php artisan queue:work --tries=3 --sleep=3
     env_file: .env.docker
     volumes:
       - storage:/var/www/html/storage
     depends_on:
-      - app
+      app:
+        condition: service_healthy
 
   scheduler:
     image: heatalert-app
+    pull_policy: never  # built by the app service
     restart: unless-stopped
     command: php artisan schedule:work
     env_file: .env.docker
     volumes:
       - storage:/var/www/html/storage
     depends_on:
-      - app
+      app:
+        condition: service_healthy
 
   db:
     image: mysql:8.4

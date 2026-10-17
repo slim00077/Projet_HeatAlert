@@ -25,8 +25,16 @@ class DatabaseSeeder extends Seeder
             ['Amine Ben Salah', 'amine@heatalert.test'],
             ['Sarra Trabelsi', 'sarra@heatalert.test'],
             ['Karim Mansouri', 'karim@heatalert.test'],
-        ])->map(fn (array $data) => User::where('email', $data[1])->first()
-            ?? User::factory()->create(['name' => $data[0], 'email' => $data[1]]));
+        ])->map(function (array $data) {
+            // No factory here: Faker is a dev dependency and the Docker image installs without dev packages.
+            $user = User::firstOrNew(['email' => $data[1]]);
+
+            if (! $user->exists) {
+                $user->forceFill(['name' => $data[0], 'password' => 'password', 'role' => User::ROLE_RESIDENT, 'email_verified_at' => now()])->save();
+            }
+
+            return $user;
+        });
 
         $residences = [
             ['Residence Les Palmiers', '12 Avenue Habib Bourguiba', 'Centre Ville', 'Six-floor building with a shared rooftop terrace.'],
