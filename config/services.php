@@ -40,6 +40,16 @@ return [
         'token' => env('MAPBOX_TOKEN'),
     ],
 
+    // AI heat advisor. Provider "gemini" or "anthropic"; by default Gemini when its key is set.
+    'ai' => [
+        'provider' => env('AI_PROVIDER', env('GEMINI_API_KEY') ? 'gemini' : 'anthropic'),
+    ],
+
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+    ],
+
     // AI heat advisor (Claude). Without a key the advisor falls back to rule-based text.
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
