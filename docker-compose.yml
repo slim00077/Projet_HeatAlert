@@ -1,0 +1,67 @@
+# Local / demo stack: docker compose up --build
+# First run: docker compose exec app php artisan migrate:fresh --seed
+services:
+  app:
+    build:
+      context: .
+      target: app
+    image: heatalert-app
+    restart: unless-stopped
+    env_file: .env.docker
+    environment:
+      RUN_MIGRATIONS: "true"
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - storage:/var/www/html/storage:ro
+    depends_on:
+      - app
+
+  queue:
+    image: heatalert-app
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3 --sleep=3
+    env_file: .env.docker
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      - app
+
+  scheduler:
+    image: heatalert-app
+    restart: unless-stopped
+    command: php artisan schedule:work
+    env_file: .env.docker
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: heatalert_db
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  dbdata:
+  storage:
