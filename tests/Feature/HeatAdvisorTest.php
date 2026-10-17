@@ -100,3 +100,11 @@ it('renders the AI controls on the pages', function () {
     $this->get(route('front.alerts.index'))->assertSee('data-ai-brief', false)->assertSee('advisor/neighborhoods', false);
     $this->actingAs(User::factory()->admin()->create())->get(route('admin.alerts.create'))->assertSee('Draft title and description with AI');
 });
+
+it('does not cache the rule-based fallback so a recovered AI is used right away', function () {
+    fakeAi(null);
+    $this->getJson(route('advisor.brief', $this->zone))->assertJsonPath('source', 'rules');
+
+    fakeAi('Fresh AI advice.');
+    $this->getJson(route('advisor.brief', $this->zone))->assertJson(['text' => 'Fresh AI advice.', 'source' => 'ai']);
+});

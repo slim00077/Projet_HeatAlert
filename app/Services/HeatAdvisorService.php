@@ -28,18 +28,27 @@ class HeatAdvisorService
         $neighborhood->loadMissing('activeAlerts');
         $context = $this->context($neighborhood);
 
-        return Cache::remember('heat-brief:'.$neighborhood->id.':'.md5($context), now()->addMinutes(30), function () use ($neighborhood, $context) {
-            $text = $this->ai->generate(
-                self::SYSTEM,
-                'Write a safety brief of at most 120 words for the residents of this zone: the current situation, who is most at risk, '
-                ."then exactly three concrete actions for today.\n\nContext:\n{$context}",
-                700,
-            );
+        $key = 'heat-brief:'.$neighborhood->id.':'.md5($context);
 
-            return $text !== null
-                ? ['text' => $text, 'source' => 'ai']
-                : ['text' => $this->rulesBrief($neighborhood), 'source' => 'rules'];
-        });
+        if ($cached = Cache::get($key)) {
+            return $cached;
+        }
+
+        $text = $this->ai->generate(
+            self::SYSTEM,
+            'Write a safety brief of at most 120 words for the residents of this zone: the current situation, who is most at risk, '
+            ."then exactly three concrete actions for today.\n\nContext:\n{$context}",
+            700,
+        );
+
+        if ($text === null) {
+            return ['text' => $this->rulesBrief($neighborhood), 'source' => 'rules'];
+        }
+
+        $brief = ['text' => $text, 'source' => 'ai'];
+        Cache::put($key, $brief, now()->addMinutes(30));
+
+        return $brief;
     }
 
     /**

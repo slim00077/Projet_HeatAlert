@@ -47,7 +47,7 @@ return [
 
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+        'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
     ],
 
     // AI heat advisor (Claude). Without a key the advisor falls back to rule-based text.
