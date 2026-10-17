@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontHeatAlertController;
 use App\Http\Controllers\HeatAdvisorController;
@@ -9,6 +8,7 @@ use App\Http\Controllers\HeatAlertController;
 use App\Http\Controllers\MapAlertController;
 use App\Http\Controllers\MapDataController;
 use App\Http\Controllers\NeighborhoodController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidenceApprovalController;
 use App\Http\Controllers\ResidenceController;
 use App\Http\Controllers\ResidenceMemberController;
@@ -20,23 +20,18 @@ Route::get('/', function () {
     return view('front.home');
 });
 
-Route::middleware('guest')->group(function () {
-    Route::get('/register', [AuthController::class, 'showRegister'])
-        ->name('register');
+// Login, registration, logout, password reset, email verification and 2FA routes come from Fortify.
 
-    Route::post('/register', [AuthController::class, 'register']);
-
-    Route::get('/login', [AuthController::class, 'showLogin'])
-        ->name('login');
-
-    Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->middleware('password.confirm')
+        ->name('profile.edit');
+    Route::put('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
+    Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout');
-
-Route::middleware(['auth', 'admin'])
+Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')
     ->group(function () {
         Route::get('/', DashboardController::class)
@@ -67,7 +62,7 @@ Route::middleware(['auth', 'admin'])
             ->names('admin.alerts');
     });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('residences', ResidenceController::class);
     Route::post('residences/{residence}/members', [ResidenceMemberController::class, 'store'])
         ->name('residences.members.store');
@@ -85,7 +80,7 @@ Route::post('/advisor/neighborhoods/{neighborhood}/ask', [HeatAdvisorController:
 
 Route::get('/map/data', MapDataController::class)->name('map.data');
 Route::post('/map/alerts', [MapAlertController::class, 'store'])
-    ->middleware(['auth', 'throttle:10,1'])
+    ->middleware(['auth', 'verified', 'throttle:10,1'])
     ->name('map.alerts.store');
 
 Route::get('/heat-alerts', [FrontHeatAlertController::class, 'index'])->name('front.alerts.index');

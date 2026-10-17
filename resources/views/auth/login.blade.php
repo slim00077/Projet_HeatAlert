@@ -27,6 +27,7 @@
                 <label class="check-row"><input type="checkbox" name="remember" value="1"> Remember me</label>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            <p class="auth-foot" style="margin-top:.8rem"><a href="{{ route('password.request') }}">Forgot your password?</a></p>
         </form>
 
         <p class="auth-foot">Don't have an account? <a href="{{ route('register') }}">Register</a></p>

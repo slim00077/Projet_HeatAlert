@@ -40,6 +40,14 @@
                 @else
                     <span class="role-pill">{{ auth()->user()->isManager() ? 'Manager' : 'Resident' }}</span>
                 @endif
+                <a href="{{ route('profile.edit') }}" class="profile-link" title="My profile">
+                    @if (auth()->user()->profilePhotoUrl())
+                        <img src="{{ auth()->user()->profilePhotoUrl() }}" alt="" class="avatar-sm">
+                    @else
+                        <span class="avatar-sm avatar-initials">{{ auth()->user()->initials() }}</span>
+                    @endif
+                    <span>Profile</span>
+                </a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="btn btn-primary btn-sm">Logout</button>

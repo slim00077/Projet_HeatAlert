@@ -927,3 +927,19 @@ img, svg { max-width: 100%; }
 .role-pill { padding: 0.2rem 0.65rem; border-radius: 999px; background: var(--orange-soft); color: #b45309; font-size: 0.75rem; font-weight: 700; }
 .inline-input { padding: 0.45rem 0.7rem; border: 1px solid var(--border); border-radius: var(--radius-md); font: inherit; font-size: 0.85rem; min-width: 200px; }
 .members-panel { margin-bottom: 1.5rem; }
+
+/* Profile & avatars */
+.profile-page { max-width: 760px; }
+.profile-card { max-width: none; margin-bottom: 1.2rem; }
+.profile-card h3 { margin: 0 0 1rem; display: flex; align-items: center; gap: 0.6rem; }
+.profile-photo { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
+.avatar-lg { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; }
+.avatar-sm { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.avatar-initials { display: inline-grid; place-items: center; background: var(--coral); color: #fff; font-weight: 800; }
+.avatar-lg.avatar-initials { font-size: 2rem; }
+.avatar-sm.avatar-initials { font-size: 0.85rem; }
+.profile-link { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.9rem; }
+.qr-code { width: 200px; height: 200px; margin: 0.6rem 0; }
+.qr-code svg { width: 100%; height: 100%; }
+.recovery-codes ul { list-style: none; padding: 0.8rem; margin: 0 0 1rem; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; }
+.profile-photo input[type=file] { max-width: 220px; font-size: 0.8rem; }
