@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Contracts\AiTextGenerator;
+use App\Services\AnthropicTextGenerator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +13,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(AiTextGenerator::class, fn () => new AnthropicTextGenerator(
+            config('services.anthropic.key'),
+            config('services.anthropic.model'),
+        ));
     }
 
     /**

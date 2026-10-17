@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontHeatAlertController;
+use App\Http\Controllers\HeatAdvisorController;
 use App\Http\Controllers\HeatAlertController;
 use App\Http\Controllers\MapAlertController;
 use App\Http\Controllers\MapDataController;
@@ -55,6 +56,9 @@ Route::middleware(['auth', 'admin'])
         Route::post('/residence-approvals/{residence}/reject', [ResidenceApprovalController::class, 'reject'])
             ->name('admin.approvals.reject');
 
+        Route::post('/alerts/draft', [HeatAdvisorController::class, 'draft'])
+            ->middleware('throttle:20,1')
+            ->name('admin.alerts.draft');
         Route::post('/weather/sync', WeatherSyncController::class)->name('admin.weather.sync');
 
         Route::resource('neighborhoods', NeighborhoodController::class)->names('admin.neighborhoods');
@@ -71,6 +75,13 @@ Route::middleware('auth')->group(function () {
         ->name('residences.members.destroy');
     Route::resource('resident-reports', ResidentReportController::class);
 });
+
+Route::get('/advisor/neighborhoods/{neighborhood}/brief', [HeatAdvisorController::class, 'brief'])
+    ->middleware('throttle:20,1')
+    ->name('advisor.brief');
+Route::post('/advisor/neighborhoods/{neighborhood}/ask', [HeatAdvisorController::class, 'ask'])
+    ->middleware(['auth', 'throttle:10,1'])
+    ->name('advisor.ask');
 
 Route::get('/map/data', MapDataController::class)->name('map.data');
 Route::post('/map/alerts', [MapAlertController::class, 'store'])

@@ -95,6 +95,12 @@
                     residences = '<p style="margin:.6rem 0 0"><small>Log in to see your residences in this zone.</small></p>';
                 }
 
+                const ai = `<div class="ai-box" data-zone="${n.id}">
+                    <button type="button" class="btn btn-outline btn-sm" data-ai-brief>AI safety brief</button>
+                    ${isAuthenticated ? '<form data-ai-ask style="display:flex;gap:.3rem;margin-top:.4rem"><input name="question" placeholder="Ask about this zone..." maxlength="300" required style="flex:1;padding:.3rem .5rem;border:1px solid #e5e7eb;border-radius:.5rem;font-size:.8rem"><button class="btn btn-primary btn-sm">Ask</button></form>' : ''}
+                    <p class="ai-answer" style="margin:.4rem 0 0;font-size:.82rem"></p>
+                </div>`;
+
                 const link = element.dataset.detailUrl
                     ? `<p style="margin:.5rem 0 0"><a href="${element.dataset.detailUrl.replace('__ID__', n.id)}">Open zone details</a></p>`
                     : '';
@@ -112,9 +118,37 @@
                     <p style="margin:.6rem 0 .2rem"><strong>Active alerts</strong></p>
                     <ul style="margin:0;padding-left:1rem">${alerts}</ul>
                     ${residences}
+                    ${ai}
                     ${link}
                 </div>`;
             };
+
+            const showAnswer = (box, promise) => {
+                const out = box.querySelector('.ai-answer');
+                out.textContent = 'Thinking...';
+                promise.then((response) => response.json()).then((data) => {
+                    out.textContent = data.text ?? data.message ?? 'No answer.';
+                    out.insertAdjacentHTML('beforeend', `<br><small style="color:#6b7280">${data.source === 'ai' ? 'AI-generated' : 'Standard advice (AI unavailable)'}</small>`);
+                }).catch(() => { out.textContent = 'Could not get an answer right now.'; });
+            };
+
+            map.on('popupopen', (event) => {
+                const box = event.popup.getElement().querySelector('.ai-box');
+                if (!box) { return; }
+                const zone = box.dataset.zone;
+                box.querySelector('[data-ai-brief]').addEventListener('click', () => showAnswer(box, fetch(`/advisor/neighborhoods/${zone}/brief`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })));
+                const ask = box.querySelector('[data-ai-ask]');
+                if (ask) {
+                    ask.addEventListener('submit', (submitEvent) => {
+                        submitEvent.preventDefault();
+                        showAnswer(box, fetch(`/advisor/neighborhoods/${zone}/ask`, {
+                            method: 'POST', credentials: 'same-origin',
+                            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': element.dataset.csrf },
+                            body: JSON.stringify({ question: ask.elements.question.value }),
+                        }));
+                    });
+                }
+            });
 
             const pinPopup = (a) => `<div style="min-width:200px">
                 <h3 style="margin:0 0 .3rem">${escapeHtml(a.title)}</h3>

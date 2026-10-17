@@ -11,6 +11,11 @@
     @error('neighborhood_id')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 
+<div class="form-group">
+    <button type="button" class="btn btn-outline btn-sm" id="ai-draft" data-url="{{ route('admin.alerts.draft') }}" data-csrf="{{ csrf_token() }}"><x-icon name="bulb" /> Draft title and description with AI</button>
+    <span class="field-hint" id="ai-draft-status"></span>
+</div>
+
 <div class="form-group @error('title') has-error @enderror">
     <label for="title">Title</label>
     <input type="text" id="title" name="title" value="{{ old('title', $heatAlert->title) }}">
@@ -62,6 +67,28 @@
 </div>
 
 <script>
+    document.getElementById('ai-draft').addEventListener('click', function () {
+        const status = document.getElementById('ai-draft-status');
+        const neighborhood = document.getElementById('neighborhood_id').value;
+        if (!neighborhood) { status.textContent = 'Select a neighborhood first.'; return; }
+
+        status.textContent = 'Drafting...';
+        fetch(this.dataset.url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': this.dataset.csrf },
+            body: JSON.stringify({
+                neighborhood_id: neighborhood,
+                severity_level: document.getElementById('severity_level').value,
+                temperature: document.getElementById('temperature').value || null,
+            }),
+        }).then((response) => response.json()).then((draft) => {
+            document.getElementById('title').value = draft.title;
+            document.getElementById('description').value = draft.description;
+            status.textContent = draft.source === 'ai' ? 'Drafted by AI - review before saving.' : 'AI not configured: standard template used.';
+        }).catch(() => { status.textContent = 'Could not draft right now.'; });
+    });
+
     document.getElementById('temperature').addEventListener('input', function () {
         const value = parseFloat(this.value);
         if (isNaN(value)) { return; }

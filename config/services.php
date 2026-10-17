@@ -40,6 +40,12 @@ return [
         'token' => env('MAPBOX_TOKEN'),
     ],
 
+    // AI heat advisor (Claude). Without a key the advisor falls back to rule-based text.
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+    ],
+
     'open_meteo' => [
         'url' => env('OPEN_METEO_URL', 'https://api.open-meteo.com/v1/forecast'),
         // Path to a CA bundle when PHP has no curl.cainfo configured (common on Windows).
