@@ -170,24 +170,88 @@ docker compose exec -u www-data app php artisan db:seed --force    # demo data, 
 
 ### CI/CD pipeline (GitHub Actions)
 
+**CI (Continuous Integration)** means every change is checked automatically, so a broken change is caught before it is merged. **CD (Continuous Delivery)** means a version that passed is packaged automatically into a ready-to-run artifact. Here the artifact is a Docker image. Two workflow files implement this, and you can follow every run in the **Actions** tab of the GitHub repository.
+
 ```
- push / pull request                         merge to main or tag v*
-        |                                              |
-        v                                              v
- +---------------+   +---------------+   +--------------------+   +--------------------+
- | lint (Pint)   |-->| tests (Pest)  |-->| docker image build |   | publish image      |
- +---------------+   +---------------+   +--------------------+   | to GHCR (deploy)   |
-        ci.yml  (every push and PR)                               +--------------------+
-                                                                      deploy.yml
+ PUSH to main / develop / member branches,  or PULL REQUEST into main / develop
+                                |
+                                v
+   +------------------------------- ci.yml  [CI] -------------------------------+
+   |  1. lint (Pint)    2. tests (Pest)                                          |
+   |        \               /                                                    |
+   |         +-- both pass -+--> 3. docker image build (check only, no push)     |
+   +-----------------------------------------------------------------------------+
+
+ PUSH to main  or  TAG v*   (starts at the same time as CI, see the note below)
+                                |
+                                v
+   +----------------------------- deploy.yml  [CD] ------------------------------+
+   |  build the production image  -->  push it to GitHub Container Registry      |
+   +-----------------------------------------------------------------------------+
 ```
 
-**`.github/workflows/ci.yml` (continuous integration)** runs on every push to `main`, `develop` and the member branches, and on pull requests into `main` and `develop`:
+#### When does it run?
 
-1. **lint:** installs the dependencies and checks the code style with Laravel Pint.
-2. **tests:** sets up PHP 8.3, builds the front-end assets, and runs the Pest suite on an in-memory SQLite database.
-3. **docker:** builds the production image to prove the Dockerfile works. It only runs when the first two jobs pass.
+| Event | `ci.yml` (CI) | `deploy.yml` (CD) |
+|---|---|---|
+| Push to `main`, `develop`, `jasser`, `aziz`, `NizarChaieb` | Yes | Only on `main` |
+| Pull request into `main` or `develop` | Yes | No |
+| Tag starting with `v` (for example `v1.0.0`) | No | Yes |
 
-**`.github/workflows/deploy.yml` (continuous delivery)** runs when code reaches `main` or a `v*` tag. It builds the production image and publishes it to the GitHub Container Registry as `ghcr.io/<owner>/<repository>`, tagged with the branch or tag name and the commit SHA. That image can be started on any server with Docker.
+#### `ci.yml`: Continuous Integration (CI)
+
+Three jobs. `lint` and `tests` run in parallel on separate fresh Ubuntu machines. `docker` waits for both (`needs: [lint, tests]`), so it only runs if they pass.
+
+**Job 1: Code style (Pint)** is a CI step: it checks the quality of the code.
+
+| Step | What it does |
+|---|---|
+| Checkout | Downloads the repository code onto the runner. |
+| Setup PHP 8.3 | Installs PHP 8.3 and Composer 2. |
+| Cache `vendor` | Restores the Composer packages from a previous run. The cache key is the hash of `composer.lock`, so it is rebuilt only when dependencies change. |
+| `composer install` | Installs the PHP dependencies exactly as locked. This step fails if `composer.lock` does not match the PHP platform, which is why the platform is pinned to PHP 8.2 in `composer.json`. |
+| `vendor/bin/pint --test` | Checks the code against the Laravel style rules without modifying any file. It fails if any file is badly formatted. |
+
+**Job 2: Tests (Pest)** is a CI step: it proves the application still behaves correctly.
+
+| Step | What it does |
+|---|---|
+| Checkout | Downloads the code. |
+| Setup PHP 8.3 | Installs PHP with the extensions the app needs (`mbstring`, `pdo_sqlite`, `intl`, `bcmath`). `pdo_sqlite` is needed because the tests use an in-memory SQLite database. |
+| Cache `vendor` and `composer install` | Same as in the lint job. |
+| `cp .env.example .env` and `key:generate` | Creates the environment file and the application key the framework needs to boot. |
+| Setup Node 22 | Installs Node and caches the npm packages. |
+| `npm ci` and `npm run build` | Installs the front-end packages and builds the Vite and Tailwind assets. The pages load these assets, so the tests need them. |
+| `php artisan test --compact` | Runs the whole Pest suite. Any failing test fails the job. |
+
+**Job 3: Docker image build** is a CI step: it proves the Dockerfile still works. It does not publish anything.
+
+| Step | What it does |
+|---|---|
+| Checkout | Downloads the code. |
+| Setup Buildx | Enables the Docker build engine with layer caching. |
+| Build (`push: false`) | Builds the image from the Dockerfile: assets, PHP dependencies, PHP-FPM runtime. The image is discarded afterwards, and the layer cache is stored in the GitHub Actions cache so later builds are faster. |
+
+#### `deploy.yml`: Continuous Delivery (CD)
+
+One job, `publish`. It needs `packages: write` permission to push to the registry, and uses the automatic `GITHUB_TOKEN`, so no password is stored in the repository.
+
+| Step | What it does |
+|---|---|
+| Checkout | Downloads the code of the commit or tag being released. |
+| Setup Buildx | Enables the Docker build engine with caching. |
+| Login to `ghcr.io` | Authenticates to the GitHub Container Registry as the user who pushed. |
+| Compute image name and tags | Builds the image name `ghcr.io/<owner>/<repository>` and its tags: the branch name (for example `main`), the git tag (for example `v1.0.0`) and the short commit SHA. |
+| Build and push (`push: true`) | Builds the production image and uploads it to the registry with those tags. |
+
+The result is a versioned image that can be started on any machine with Docker: `docker pull ghcr.io/<owner>/<repository>:main`.
+
+#### What is and is not automated
+
+- **Automated, CI:** code style, the full test suite and a Docker build on every push and pull request.
+- **Automated, CD:** building and publishing the production image when code reaches `main` or a version tag.
+- **Not automated:** starting the new image on a server. That step needs a host and secrets, so it is done by hand with Docker Compose (see "Docker architecture" above).
+- **Note:** `deploy.yml` starts at the same time as CI on a push to `main`. It does not wait for CI to finish. In practice code reaches `main` through `develop`, where CI has already passed, but the publish step is not blocked by a CI failure.
 
 **Composer platform pin:** `composer.json` fixes the platform to PHP 8.2. Dependencies are resolved for that version, so `composer install` works the same on every machine and in CI, even when a developer runs a newer PHP.
 
