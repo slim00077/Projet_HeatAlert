@@ -24,31 +24,30 @@ HeatAlert is a web application that warns residents about dangerous heat. It fol
 - **Tests:** Pest
 - **DevOps:** Docker, Docker Compose, GitHub Actions, GitHub Container Registry
 
-## Quick start (local)
+## Quick start
 
-Requirements: PHP 8.2+, Composer, Node 20.19+ (22 recommended), MySQL running on port 3306.
+After cloning and checking out `develop`, pick one of the two ways below. Both create the database, load the demo accounts and data, and start everything. Nothing else has to be configured.
 
-```bash
-composer install
-npm install
-cp .env.example .env
-php artisan key:generate
-```
-
-Create an empty MySQL database named `heatalert` and check the `DB_*` values in `.env`, then:
+### Option A: Docker (nothing to install except Docker Desktop)
 
 ```bash
-php artisan migrate:fresh --seed
-npm run build            # or: npm run dev (keeps rebuilding while you edit)
-php artisan serve        # http://127.0.0.1:8000
+docker compose up --build
 ```
 
-In two more terminals, start the background processes:
+Wait until the output settles (the first start takes a few minutes), then open **http://localhost:8080**. The database, the tables, the demo accounts, the app key, the queue worker and the scheduler are all created automatically. Stop with `Ctrl+C`; start again with `docker compose up`. Your data is kept between restarts; `docker compose down -v` erases it.
+
+To change the port, run `WEB_PORT=9090 docker compose up --build`. To add a Gemini key or SMTP settings, copy `.env.docker.example` to `.env.docker` and fill it in (optional).
+
+### Option B: local (PHP, Composer, Node and MySQL already installed)
+
+Requirements: PHP 8.2+, Composer, Node 20.19+ (22 recommended), MySQL running on port 3306 (default user `root`, empty password; otherwise edit `DB_USERNAME` and `DB_PASSWORD` in `.env` after the first step).
 
 ```bash
-php artisan queue:work       # sends the notification emails
-php artisan schedule:work    # runs the weather sync every 3 hours and the alert notifications
+composer setup           # installs everything, creates the database, migrates, loads the demo data, builds the assets
+composer run dev         # starts the web server, the queue worker, the scheduler and Vite together
 ```
+
+Then open **http://127.0.0.1:8000**. If `composer setup` stops because MySQL needs a password, set `DB_PASSWORD` in `.env` and run it again; it is safe to repeat.
 
 ### Demo accounts
 
@@ -156,17 +155,15 @@ The `Dockerfile` is multi-stage, so the final images contain only what they need
 | `scheduler` | `php artisan schedule:work`, runs the weather sync every 3 hours |
 | `db` | MySQL 8.4 with a persistent volume and a health check |
 
-Startup order: `db` becomes healthy, then `app` prepares the application (`docker/entrypoint.sh` fixes file ownership, caches the configuration, routes and views, runs the migrations, then creates a readiness marker). `web`, `queue` and `scheduler` only start once `app` reports healthy, so no worker runs before the database is migrated. Workers run as the unprivileged `www-data` user.
+Startup order: `db` becomes healthy, then `app` prepares the application (`docker/entrypoint.sh` fixes file ownership, creates the app key on first start, caches the configuration, routes and views, runs the migrations, loads the demo data when the database is empty, then creates a readiness marker). `web`, `queue` and `scheduler` only start once `app` reports healthy, so no worker runs before the database is migrated. Workers run as the unprivileged `www-data` user.
 
-Run the stack:
+Run the stack (no setup file needed):
 
 ```bash
-cp .env.docker.example .env.docker
-# put a key in APP_KEY:  php artisan key:generate --show   (add your Gmail / Gemini values if you have them)
-docker compose up --build
-docker compose exec -u www-data app php artisan db:seed --force    # demo data, first run only
-# open http://localhost:8080
+docker compose up --build        # http://localhost:8080
 ```
+
+On the first start the `app` container does everything by itself: it generates an app key (kept in the shared storage volume), runs the migrations and loads the demo data with `php artisan db:seed-if-empty`, which skips seeding when the database already has users, so restarts never duplicate data. Defaults are in `docker/defaults.env`; an optional `.env.docker` overrides them.
 
 ### CI/CD pipeline (GitHub Actions)
 

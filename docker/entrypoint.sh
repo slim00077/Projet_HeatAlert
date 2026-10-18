@@ -10,6 +10,21 @@ run() {
     su -s /bin/sh www-data -c "$*"
 }
 
+# One app key for the whole stack: generated once, kept in the shared storage volume.
+# An APP_KEY given through .env.docker always wins.
+KEY_FILE=storage/app/.app_key
+if [ -z "${APP_KEY:-}" ]; then
+    if [ ! -s "$KEY_FILE" ]; then
+        # Only the app container generates the key; workers start later and read it.
+        if [ "$1" = "php-fpm" ]; then
+            php artisan key:generate --show --no-ansi > "$KEY_FILE"
+            chown www-data:www-data "$KEY_FILE"
+        fi
+    fi
+    APP_KEY="$(cat "$KEY_FILE")"
+    export APP_KEY
+fi
+
 # Only the web container prepares the application; workers just start (as www-data).
 if [ "$1" = "php-fpm" ]; then
     rm -f /tmp/ready
@@ -20,6 +35,11 @@ if [ "$1" = "php-fpm" ]; then
 
     if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
         run "php artisan migrate --force"
+    fi
+
+    # Demo accounts and data, loaded only when the database has no user yet.
+    if [ "${RUN_SEEDER:-false}" = "true" ]; then
+        run "php artisan db:seed-if-empty"
     fi
 
     touch /tmp/ready

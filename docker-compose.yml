@@ -1,22 +1,30 @@
-# Local / demo stack: docker compose up --build
-# First run: docker compose exec app php artisan migrate:fresh --seed
+# Zero-setup stack:  docker compose up --build   then open http://localhost:8080
+#
+# Everything is automatic on the first start: the database is created, the migrations run,
+# the demo accounts and data are loaded (only when the database is empty) and an app key is
+# generated. Defaults live in docker/defaults.env; to add your own keys (Gemini, SMTP...) create
+# an optional .env.docker from .env.docker.example, it overrides the defaults.
+x-env: &env
+  env_file:
+    - path: docker/defaults.env
+    - path: .env.docker
+      required: false
+
 services:
   app:
+    <<: *env
     build:
       context: .
       target: app
     image: heatalert-app
     restart: unless-stopped
-    env_file: .env.docker
-    environment:
-      RUN_MIGRATIONS: "true"
     volumes:
       - storage:/var/www/html/storage
     healthcheck:
       test: ["CMD", "test", "-f", "/tmp/ready"]
       interval: 5s
       timeout: 3s
-      retries: 60
+      retries: 90
     depends_on:
       db:
         condition: service_healthy
@@ -27,7 +35,7 @@ services:
       target: web
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "${WEB_PORT:-8080}:80"
     volumes:
       - storage:/var/www/html/storage:ro
     depends_on:
@@ -35,11 +43,11 @@ services:
         condition: service_healthy
 
   queue:
+    <<: *env
     image: heatalert-app
     pull_policy: never  # built by the app service
     restart: unless-stopped
     command: php artisan queue:work --tries=3 --sleep=3
-    env_file: .env.docker
     volumes:
       - storage:/var/www/html/storage
     depends_on:
@@ -47,11 +55,11 @@ services:
         condition: service_healthy
 
   scheduler:
+    <<: *env
     image: heatalert-app
     pull_policy: never  # built by the app service
     restart: unless-stopped
     command: php artisan schedule:work
-    env_file: .env.docker
     volumes:
       - storage:/var/www/html/storage
     depends_on:
