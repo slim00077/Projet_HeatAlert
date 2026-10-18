@@ -10,11 +10,11 @@ COPY resources ./resources
 COPY public ./public
 RUN npm run build
 
-# ---- 2. PHP dependencies ----
+# ---- 2. PHP dependencies (dev packages kept: the demo seeders use Faker factories) ----
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --no-progress --no-scripts --prefer-dist --optimize-autoloader --ignore-platform-reqs
+RUN composer install --no-interaction --no-progress --no-scripts --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
 # ---- 3. Runtime image (PHP-FPM) ----
 FROM php:8.3-fpm-alpine AS app

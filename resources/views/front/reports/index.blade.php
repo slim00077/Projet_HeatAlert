@@ -36,7 +36,7 @@
                     @forelse ($reports as $report)
                         <tr>
                             <td>{{ $report->title }}</td>
-                            <td>{{ $report->residence->name }}</td>
+                            <td>{{ $report->residence->name }} @if ($report->residence->hasHeatAlert())<span class="status-badge status-pending">Heat Alert</span>@endif</td>
                             <td><x-status-badge :status="$report->status" /></td>
                             <td>{{ $report->reported_at->format('Y-m-d') }}</td>
                             <td class="actions">

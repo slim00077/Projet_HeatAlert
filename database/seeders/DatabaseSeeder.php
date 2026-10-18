@@ -71,7 +71,13 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        $this->call(HeatAlertSeeder::class);
-        $this->call(ManagerSeeder::class);
+        $this->call([
+            HeatAlertSeeder::class,
+            ManagerSeeder::class,
+            CoolSpotSeeder::class,
+            AdviceSeeder::class,
+            PowerOutageSeeder::class,
+            OutageReportSeeder::class,
+        ]);
     }
 }

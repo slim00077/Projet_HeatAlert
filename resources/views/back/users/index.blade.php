@@ -9,6 +9,13 @@
         <h1>Users</h1>
         <p class="subtitle">All registered accounts, their roles and the neighborhood of each residence manager</p>
     </div>
+    <div class="toolbar">
+        <form action="{{ route('admin.users.index') }}" method="GET" class="search-form">
+            <input type="text" name="search" value="{{ $search }}" placeholder="Search by name or email...">
+            <button type="submit" class="btn btn-outline" aria-label="Search"><x-icon name="search" /></button>
+        </form>
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add User</a>
+    </div>
 </div>
 
 <x-flash-messages />
@@ -22,6 +29,7 @@
                 <th>Email</th>
                 <th>Role</th>
                 <th>Neighborhood</th>
+                <th>Residences</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -33,13 +41,21 @@
                     <td>{{ $user->email }}</td>
                     <td><span class="status-badge {{ $user->isAdmin() ? 'status-admin' : ($user->isManager() ? 'status-in-progress' : 'status-resolved') }}">{{ ucfirst($user->role) }}</span></td>
                     <td>{{ $user->neighborhood?->name ?? '-' }}</td>
+                    <td>{{ $user->residences_count }}</td>
                     <td class="actions">
-                        <a href="{{ route('admin.users.edit', $user) }}" class="icon-action is-edit" title="Change role"><x-icon name="pencil" /></a>
+                        <a href="{{ route('admin.users.edit', $user) }}" class="icon-action is-edit" title="Edit"><x-icon name="pencil" /></a>
+                        @unless ($user->is(auth()->user()))
+                            <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Delete this user and all of their residences and reports?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="icon-action is-danger" title="Delete"><x-icon name="trash" /></button>
+                            </form>
+                        @endunless
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6">No users yet.</td>
+                    <td colspan="7">No users found.</td>
                 </tr>
             @endforelse
         </tbody>

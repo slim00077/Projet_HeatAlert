@@ -7,6 +7,15 @@
 
     <title>@yield('title', 'HeatAlert')</title>
 
+    <script>
+        (function () {
+            try {
+                var choice = localStorage.getItem('theme') || 'light';
+                var dark = choice === 'dark' || (choice === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            } catch (e) {}
+        })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>

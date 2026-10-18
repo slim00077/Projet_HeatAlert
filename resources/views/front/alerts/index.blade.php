@@ -23,17 +23,31 @@
             </form>
         </div>
 
+        <x-flash-messages />
+
+        @auth
+            <p>
+                <a href="{{ auth()->user()->isAdmin() ? route('admin.alerts.create') : route('front.alerts.create') }}" class="btn btn-outline"><x-icon name="plus" /> Add an alert</a>
+            </p>
+        @endauth
+
         @include('partials.neighborhood-map', ['selectedId' => $neighborhoodId])
 
         <div class="alert-grid">
             @forelse ($alerts as $alert)
                 <article class="alert-card" style="border-top-color: {{ $alert->severity_level->color() }}">
+                    @if ($alert->imageUrl())
+                        <img src="{{ $alert->imageUrl() }}" alt="{{ $alert->title }}" loading="lazy" style="width:100%;height:160px;object-fit:cover;border-radius:.6rem;margin-bottom:.8rem">
+                    @endif
                     <div class="toolbar" style="justify-content: space-between">
                         <x-severity-badge :severity="$alert->severity_level" />
                         <x-alert-status-badge :alert="$alert" />
                     </div>
                     <h2>{{ $alert->title }}</h2>
                     <p class="meta"><x-icon name="pin" /> {{ $alert->neighborhood->name }}@if ($alert->temperature !== null) · {{ $alert->temperature }} °C @endif</p>
+                    @if ($alert->residence_name)
+                        <p class="meta"><x-icon name="building" /> {{ $alert->residence_name }}</p>
+                    @endif
                     @if ($alert->description)
                         <p>{{ $alert->description }}</p>
                     @endif

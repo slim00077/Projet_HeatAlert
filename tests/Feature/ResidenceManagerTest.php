@@ -19,6 +19,11 @@ beforeEach(function () {
     $this->resident = User::factory()->create(['name' => 'Amine']);
 });
 
+function userPayload(User $user, array $overrides = []): array
+{
+    return array_merge(['name' => $user->name, 'email' => $user->email, 'role' => $user->role], $overrides);
+}
+
 function residencePayload(array $overrides = []): array
 {
     return array_merge(['name' => 'Les Dunes', 'address' => '3 Rue de la Corniche', 'neighborhood' => 'La Marsa'], $overrides);
@@ -28,20 +33,20 @@ it('only lets an admin change roles and assign a neighborhood to a manager', fun
     $this->actingAs($this->resident)->put(route('admin.users.update', $this->resident), ['role' => 'admin'])->assertForbidden();
     $this->actingAs($this->manager)->get(route('admin.users.edit', $this->resident))->assertForbidden();
 
-    $this->actingAs($this->admin)->put(route('admin.users.update', $this->resident), ['role' => 'manager'])
+    $this->actingAs($this->admin)->put(route('admin.users.update', $this->resident), userPayload($this->resident, ['role' => 'manager']))
         ->assertSessionHasErrors('neighborhood_id');
 
-    $this->actingAs($this->admin)->put(route('admin.users.update', $this->resident), ['role' => 'manager', 'neighborhood_id' => $this->ariana->id])
+    $this->actingAs($this->admin)->put(route('admin.users.update', $this->resident), userPayload($this->resident, ['role' => 'manager', 'neighborhood_id' => $this->ariana->id]))
         ->assertRedirect(route('admin.users.index'));
 
     expect($this->resident->fresh())->role->toBe('manager')->neighborhood_id->toBe($this->ariana->id);
 
-    $this->actingAs($this->admin)->put(route('admin.users.update', $this->resident), ['role' => 'resident']);
+    $this->actingAs($this->admin)->put(route('admin.users.update', $this->resident), userPayload($this->resident, ['role' => 'resident']));
     expect($this->resident->fresh())->role->toBe('resident')->neighborhood_id->toBeNull();
 });
 
 it('stops an admin from removing their own admin access', function () {
-    $this->actingAs($this->admin)->put(route('admin.users.update', $this->admin), ['role' => 'resident'])
+    $this->actingAs($this->admin)->put(route('admin.users.update', $this->admin), userPayload($this->admin, ['role' => 'resident']))
         ->assertSessionHasErrors('role');
 
     expect($this->admin->fresh()->isAdmin())->toBeTrue();

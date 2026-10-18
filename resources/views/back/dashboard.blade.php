@@ -46,6 +46,12 @@
 </div>
 
 <div class="dashboard-panels">
+    <section class="panel">
+        <div class="panel-head">
+            <h2><a href="{{ route('admin.power-outages.index') }}">Power Outages</a></h2>
+        </div>
+        <p>Manage power outages and review resident reports.</p>
+    </section>
 
     <section class="panel">
         <div class="panel-head"><h2>Active Alerts by Severity</h2><a href="{{ route('admin.alerts.index') }}">View all</a></div>

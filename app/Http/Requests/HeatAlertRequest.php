@@ -23,7 +23,9 @@ class HeatAlertRequest extends FormRequest
         return [
             'neighborhood_id' => ['required', 'exists:neighborhoods,id'],
             'title' => ['required', 'string', 'max:255'],
+            'residence_name' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
             'severity_level' => ['required', Rule::enum(Severity::class)],
             'temperature' => ['nullable', 'numeric', 'between:-10,60'],
             'start_date' => ['required', 'date'],

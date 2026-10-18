@@ -10,7 +10,7 @@
 
 <x-flash-messages />
 
-<form action="{{ route('admin.alerts.update', $heatAlert) }}" method="POST" class="form-card">
+<form action="{{ route('admin.alerts.update', $heatAlert) }}" method="POST" enctype="multipart/form-data" class="form-card">
     @method('PUT')
     @include('admin.alerts._form')
 </form>

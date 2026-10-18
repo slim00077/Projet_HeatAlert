@@ -22,10 +22,25 @@
     @error('title')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 
+<div class="form-group @error('residence_name') has-error @enderror">
+    <label for="residence_name">Residence concerned (optional)</label>
+    <input type="text" id="residence_name" name="residence_name" value="{{ old('residence_name', $heatAlert->residence_name) }}" placeholder="e.g. Residence Les Palmiers">
+    @error('residence_name')<p class="field-error">{{ $message }}</p>@enderror
+</div>
+
 <div class="form-group @error('description') has-error @enderror">
     <label for="description">Description</label>
     <textarea id="description" name="description" rows="3">{{ old('description', $heatAlert->description) }}</textarea>
     @error('description')<p class="field-error">{{ $message }}</p>@enderror
+</div>
+
+<div class="form-group @error('image') has-error @enderror">
+    <label for="image">Picture (optional)</label>
+    <input type="file" id="image" name="image" accept="image/*">
+    @if ($heatAlert->image_path)
+        <div class="media-preview"><img src="{{ $heatAlert->imageUrl() }}" alt="Current picture"><small>Current picture. Choose a new one to replace it.</small></div>
+    @endif
+    @error('image')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 
 <div class="form-row">

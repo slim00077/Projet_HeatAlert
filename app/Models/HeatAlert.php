@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class HeatAlert extends Model
 {
@@ -30,7 +31,9 @@ class HeatAlert extends Model
     protected $fillable = [
         'neighborhood_id',
         'title',
+        'residence_name',
         'description',
+        'image_path',
         'severity_level',
         'source',
         'temperature',
@@ -154,5 +157,10 @@ class HeatAlert extends Model
         $this->forceFill(['notified_at' => now()])->save();
 
         return $residents->count();
+    }
+
+    public function imageUrl(): ?string
+    {
+        return $this->image_path ? Storage::disk('public')->url($this->image_path) : null;
     }
 }

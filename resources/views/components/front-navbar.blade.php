@@ -16,15 +16,18 @@
             @auth
                 @if (auth()->user()->isManager())
                     <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])>Managed Residences</a>
+                    <a href="{{ route('my-outage-reports.index') }}" @class(['is-active' => request()->routeIs('my-outage-reports.*')])>My Outage Reports</a>
                 @elseif (auth()->user()->isResident())
                     <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])>My Residences</a>
                     <a href="{{ route('resident-reports.index') }}" @class(['is-active' => request()->routeIs('resident-reports.*')])>My Reports</a>
+                    <a href="{{ route('my-outage-reports.index') }}" @class(['is-active' => request()->routeIs('my-outage-reports.*')])>My Outage Reports</a>
                 @endif
             @endauth
 
             <a href="{{ route('front.alerts.index') }}" @class(['is-active' => request()->routeIs('front.alerts.*')])>Heat Alerts</a>
-            <a href="#">Cool Spots</a>
-            <a href="#">Advice</a>
+            <a href="{{ route('front.power-outages.index') }}" @class(['is-active' => request()->routeIs('front.power-outages.*')])>Power Outages</a>
+            <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
+            <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*')])>Advice</a>
             <a href="{{ route('pages.about') }}" @class(['is-active' => request()->routeIs('pages.about')])>About</a>
 
         </nav>

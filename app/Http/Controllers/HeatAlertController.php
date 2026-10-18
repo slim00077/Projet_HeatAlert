@@ -8,6 +8,7 @@ use App\Models\HeatAlert;
 use App\Models\Neighborhood;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class HeatAlertController extends Controller
@@ -56,7 +57,7 @@ class HeatAlertController extends Controller
 
     public function store(HeatAlertRequest $request): RedirectResponse
     {
-        $heatAlert = HeatAlert::create($request->validated());
+        $heatAlert = HeatAlert::create($this->payload($request) + $this->storeImage($request));
 
         $notified = $heatAlert->isActive() ? $heatAlert->load('neighborhood')->notifyResidents() : 0;
 
@@ -88,15 +89,47 @@ class HeatAlertController extends Controller
 
     public function update(HeatAlertRequest $request, HeatAlert $heatAlert): RedirectResponse
     {
-        $heatAlert->update($request->validated());
+        $heatAlert->update($this->payload($request) + $this->storeImage($request, $heatAlert));
 
         return redirect()->route('admin.alerts.show', $heatAlert)->with('success', 'Heat alert updated.');
     }
 
     public function destroy(HeatAlert $heatAlert): RedirectResponse
     {
+        if ($heatAlert->image_path) {
+            Storage::disk('public')->delete($heatAlert->image_path);
+        }
+
         $heatAlert->delete();
 
         return redirect()->route('admin.alerts.index')->with('success', 'Heat alert deleted.');
+    }
+
+    /**
+     * Validated fields without the uploaded file.
+     *
+     * @return array<string, mixed>
+     */
+    private function payload(HeatAlertRequest $request): array
+    {
+        return collect($request->validated())->except('image')->all();
+    }
+
+    /**
+     * Stores the uploaded picture and returns the column to save.
+     *
+     * @return array<string, string>
+     */
+    private function storeImage(Request $request, ?HeatAlert $heatAlert = null): array
+    {
+        if (! $request->hasFile('image')) {
+            return [];
+        }
+
+        if ($heatAlert?->image_path) {
+            Storage::disk('public')->delete($heatAlert->image_path);
+        }
+
+        return ['image_path' => $request->file('image')->store('heat-alerts', 'public')];
     }
 }

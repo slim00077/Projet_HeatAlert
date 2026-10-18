@@ -39,19 +39,20 @@ class HeatAlertSeeder extends Seeder
         ]);
 
         $alerts = [
-            ['Centre Ville', 'Alerte Canicule Rouge - Vigilance Absolue', 'Températures dépassant les 42°C l\'après-midi. Ne sortez qu\'en cas d\'absolue nécessité et hydratez-vous.', 'high', 42.0, now()->subDay(), now()->addDays(3)],
-            ['Zone Industrielle', 'Vague de chaleur persistante', 'Risque de malaise pour les travailleurs en extérieur. Les températures ressenties atteignent 38°C.', 'medium', 38.0, now()->subHours(5), now()->addDays(2)],
-            ['Centre Ville', 'Alerte passée: Pic de chaleur de la semaine dernière', 'Cet épisode est maintenant terminé. Les températures sont revenues aux normales de saison.', 'high', 41.0, now()->subDays(10), now()->subDays(7)],
-            ['Le Lac', 'Températures chaudes persistantes', 'Même près du lac, l\'air reste lourd. Attention aux activités sportives.', 'low', 33.0, now()->subDays(2), null],
-            ['La Marsa', 'Chaleur intense sur le littoral', 'Forte chaleur humide : surveillez les personnes âgées de votre entourage.', 'medium', 37.0, now()->subHours(2), now()->addDays(2)],
-            ['Ben Arous', 'Canicule annoncée ce week-end', 'Un pic de chaleur est attendu à partir de demain. Préparez-vous.', 'high', 41.5, now()->addDay(), now()->addDays(4)],
-            ['Ariana', 'Épisode de chaleur du mois dernier', 'Épisode terminé.', 'medium', 36.0, now()->subDays(35), now()->subDays(32)],
+            ['Centre Ville', 'Alerte Canicule Rouge - Vigilance Absolue', 'Residence Les Palmiers', 'Températures dépassant les 42°C l\'après-midi. Ne sortez qu\'en cas d\'absolue nécessité et hydratez-vous.', 'high', 42.0, now()->subDay(), now()->addDays(3)],
+            ['Zone Industrielle', 'Vague de chaleur persistante', null, 'Risque de malaise pour les travailleurs en extérieur. Les températures ressenties atteignent 38°C.', 'medium', 38.0, now()->subHours(5), now()->addDays(2)],
+            ['Centre Ville', 'Alerte passée: Pic de chaleur de la semaine dernière', null, 'Cet épisode est maintenant terminé. Les températures sont revenues aux normales de saison.', 'high', 41.0, now()->subDays(10), now()->subDays(7)],
+            ['Le Lac', 'Températures chaudes persistantes', null, 'Même près du lac, l\'air reste lourd. Attention aux activités sportives.', 'low', 33.0, now()->subDays(2), null],
+            ['La Marsa', 'Chaleur intense sur le littoral', 'Residence El Yasmine', 'Forte chaleur humide : surveillez les personnes âgées de votre entourage.', 'medium', 37.0, now()->subHours(2), now()->addDays(2)],
+            ['Ben Arous', 'Canicule annoncée ce week-end', null, 'Un pic de chaleur est attendu à partir de demain. Préparez-vous.', 'high', 41.5, now()->addDay(), now()->addDays(4)],
+            ['Ariana', 'Épisode de chaleur du mois dernier', null, 'Épisode terminé.', 'medium', 36.0, now()->subDays(35), now()->subDays(32)],
         ];
 
-        foreach ($alerts as [$neighborhood, $title, $description, $severity, $temperature, $start, $end]) {
+        foreach ($alerts as [$neighborhood, $title, $residenceName, $description, $severity, $temperature, $start, $end]) {
             HeatAlert::firstOrCreate(
                 ['neighborhood_id' => $neighborhoods[$neighborhood]->id, 'title' => $title],
                 [
+                    'residence_name' => $residenceName,
                     'description' => $description,
                     'severity_level' => $severity,
                     'temperature' => $temperature,
