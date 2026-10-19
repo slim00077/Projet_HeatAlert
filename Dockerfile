@@ -42,3 +42,13 @@ CMD ["php-fpm"]
 FROM nginx:1.27-alpine AS web
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=app /var/www/html/public /var/www/html/public
+
+# ---- 5. Single-container image (nginx + PHP-FPM + queue + scheduler) for hosts such as Render (keep this the LAST stage: it is the default build target) ----
+FROM app AS render
+RUN apk add --no-cache nginx supervisor
+COPY docker/render/nginx.conf docker/render/supervisord.conf /etc/heatalert/
+COPY docker/render/start.sh /usr/local/bin/render-start.sh
+RUN chmod +x /usr/local/bin/render-start.sh && rm -f /etc/nginx/http.d/default.conf
+ENV RUN_MIGRATIONS=true RUN_SEEDER=true
+ENTRYPOINT []
+CMD ["render-start.sh"]

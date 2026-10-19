@@ -1,0 +1,69 @@
+# Production stack for a VPS. It pulls the images published by the CD workflow (no build):
+#   cp .env.prod.example .env.prod   (edit it)   then   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+# The site is served on port 80 of the server: http://<server-ip>
+x-env: &env
+  env_file:
+    - docker/defaults.env
+    - .env.prod
+  restart: unless-stopped
+
+x-app: &app
+  <<: *env
+  image: ghcr.io/${GHCR_REPOSITORY}:${IMAGE_TAG:-latest}
+  volumes:
+    - storage:/var/www/html/storage
+
+services:
+  app:
+    <<: *app
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 90
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/${GHCR_REPOSITORY}-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80"
+    volumes:
+      - storage:/var/www/html/storage:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+  queue:
+    <<: *app
+    command: php artisan queue:work --tries=3 --sleep=3
+    depends_on:
+      app:
+        condition: service_healthy
+
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+    depends_on:
+      app:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  dbdata:
+  storage:
