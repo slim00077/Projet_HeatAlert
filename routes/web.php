@@ -36,7 +36,18 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
+<<<<<<< Updated upstream
 Route::middleware(['auth', 'admin'])
+=======
+Route::get('/cool-spots', [CoolSpotController::class, 'index'])->name('cool-spots.index');
+Route::post('/cool-spots/recommend', [CoolSpotController::class, 'recommend'])
+    ->middleware(['auth', 'throttle:10,1'])
+    ->name('cool-spots.recommend');
+Route::get('/cool-spots/{coolSpot}', [CoolSpotController::class, 'show'])->name('cool-spots.show');
+
+// Admin
+Route::middleware(['auth', 'verified', 'admin'])
+>>>>>>> Stashed changes
     ->prefix('admin')
     ->group(function () {
         Route::get('/', DashboardController::class)
@@ -47,8 +58,20 @@ Route::middleware(['auth', 'admin'])
 
         // Membre 3 : points de fraîcheur (back office)
         Route::name('admin.')->group(function () {
+<<<<<<< Updated upstream
             Route::resource('cool-spot-types', AdminCoolSpotTypeController::class)->except('show');
             Route::resource('cool-spots', AdminCoolSpotController::class)->except('show');
+=======
+            Route::post('cool-spots/generate-description', [AdminCoolSpotController::class, 'generateDescription'])
+                ->middleware('throttle:10,1')
+                ->name('cool-spots.generate-description');
+
+            Route::resource('cool-spot-types', AdminCoolSpotTypeController::class)
+                ->except('show');
+
+            Route::resource('cool-spots', AdminCoolSpotController::class)
+                ->except('show');
+>>>>>>> Stashed changes
         });
     });
 

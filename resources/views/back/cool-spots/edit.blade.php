@@ -13,7 +13,7 @@
 
 <x-flash-messages />
 
-<form action="{{ route('admin.cool-spots.update', $coolSpot) }}" method="POST" class="form-card">
+<form action="{{ route('admin.cool-spots.update', $coolSpot) }}" method="POST" class="form-card cool-spot-form">
     @method('PUT')
     @include('back.cool-spots._form')
 

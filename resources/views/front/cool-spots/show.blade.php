@@ -22,6 +22,10 @@
                 @if ($coolSpot->opening_hours)
                     <div class="meta-row"><x-icon name="clock" /> Open: {{ $coolSpot->opening_hours }}</div>
                 @endif
+                @php($openNow = $coolSpot->isOpenNow())
+                @if ($openNow !== null)
+                    <span class="status-badge {{ $openNow ? 'status-resolved' : 'status-pending' }}">{{ $openNow ? 'Open now' : 'Closed' }}</span>
+                @endif
 
                 <p style="margin-top: 0.8rem">
                     <span class="status-badge {{ $coolSpot->is_accessible ? 'status-resolved' : 'status-pending' }}">
@@ -59,6 +63,10 @@
                             <div class="meta-row"><x-icon name="pin" /> {{ $spot->address }}</div>
                             @if ($spot->opening_hours)
                                 <div class="meta-row"><x-icon name="clock" /> {{ $spot->opening_hours }}</div>
+                            @endif
+                            @php($relatedOpenNow = $spot->isOpenNow())
+                            @if ($relatedOpenNow !== null)
+                                <span class="status-badge {{ $relatedOpenNow ? 'status-resolved' : 'status-pending' }}">{{ $relatedOpenNow ? 'Open now' : 'Closed' }}</span>
                             @endif
                             <div class="residence-footer" style="margin-top: 1rem">
                                 <a href="{{ route('cool-spots.show', $spot) }}" class="card-link">View Details <x-icon name="arrow" /></a>

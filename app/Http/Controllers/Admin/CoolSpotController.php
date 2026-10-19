@@ -6,6 +6,8 @@ use App\Http\Requests\CoolSpotRequest;
 use App\Http\Controllers\Controller;
 use App\Models\CoolSpot;
 use App\Models\CoolSpotType;
+use App\Services\CoolSpotAiService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CoolSpotController extends Controller
@@ -31,9 +33,32 @@ class CoolSpotController extends Controller
         return view('back.cool-spots.create', compact('types'));
     }
 
+<<<<<<< Updated upstream
    public function store(CoolSpotRequest $request)
 {
     CoolSpot::create($this->data($request));
+=======
+    public function generateDescription(Request $request, CoolSpotAiService $advisor): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'type' => ['required', 'string', 'max:100'],
+            'address' => ['required', 'string', 'max:255'],
+            'is_accessible' => ['sometimes', 'boolean'],
+        ]);
+
+        return response()->json($advisor->generateDescription(
+            $data['name'],
+            $data['type'],
+            $data['address'],
+            $request->boolean('is_accessible'),
+        ));
+    }
+
+    public function store(CoolSpotRequest $request)
+    {
+        CoolSpot::create($this->data($request));
+>>>>>>> Stashed changes
 
     return redirect()->route('admin.cool-spots.index')
         ->with('success', 'Point de fraîcheur créé avec succès.');
