@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Severity;
 use App\Models\Advice;
 use App\Models\AdviceCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,6 +24,8 @@ class AdviceFactory extends Factory
             'title' => fake()->sentence(6),
             'summary' => fake()->sentence(),
             'content' => fake()->paragraphs(3, true),
+            'risk_level' => Severity::Medium,
+            'is_approved' => true,
         ];
     }
 }

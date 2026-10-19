@@ -22,11 +22,35 @@
                         <option value="{{ $category->id }}" @selected(($filters['category'] ?? '') == $category->id)>{{ $category->name }}</option>
                     @endforeach
                 </select>
+                <select name="risk_level" aria-label="Filter by heat risk level" onchange="this.form.requestSubmit()">
+                    <option value="">All risk levels</option>
+                    @foreach ($riskLevels as $riskLevel)
+                    <option value="{{ $riskLevel->value }}" @selected(($filters['risk_level'] ?? '') === $riskLevel->value)>{{ $riskLevel->label() }} risk</option>
+                    @endforeach
+                </select>
             </form>
         </div>
 
         @auth
             <p style="margin-bottom:1rem"><a href="{{ auth()->user()->isAdmin() ? route('admin.advices.create') : route('advice.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add Advice</a></p>
+            @include('front.advice._assistant-panel', [
+                'conversations' => $assistantConversations,
+                'conversation' => $assistantConversation,
+                'messages' => $assistantMessages,
+                'references' => $assistantReferences,
+            ])
+        @else
+            <section class="advice-assistant-promo" aria-labelledby="advice-assistant-title">
+                <div class="advice-assistant-promo-copy">
+                    <span class="assistant-avatar" aria-hidden="true">☀</span>
+                    <div>
+                        <p class="home-eyebrow">Personalised heat-safety help</p>
+                        <h2 id="advice-assistant-title">Have a question? Ask the HeatAlert AI assistant.</h2>
+                        <p>Get answers grounded in approved advice. Ask in French, Arabic or Tunisian derja.</p>
+                    </div>
+                </div>
+                <a class="btn btn-primary" href="{{ route('assistant.index') }}">Sign in to chat</a>
+            </section>
         @endauth
 
         <nav class="filter-tabs" aria-label="Advice categories">
@@ -46,6 +70,7 @@
                         <img src="{{ $advice->imageUrl() }}" alt="{{ $advice->title }}" loading="lazy" style="width:100%;height:160px;object-fit:cover;border-radius:var(--radius-md)">
                     @endif
                     <span class="chip">{{ $advice->category->name }}</span>
+                    <x-severity-badge :severity="$advice->risk_level" />
                     <h2>{{ $advice->title }}</h2>
                     <p class="advice-summary">{{ \Illuminate\Support\Str::limit($advice->summary ?? $advice->content, 180) }}</p>
                     <a href="{{ route('advice.show', $advice) }}" class="card-link">Read advice <x-icon name="arrow" /></a>

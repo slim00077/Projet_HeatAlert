@@ -128,7 +128,12 @@
                 out.textContent = 'Thinking...';
                 promise.then((response) => response.json()).then((data) => {
                     out.textContent = data.text ?? data.message ?? 'No answer.';
-                    out.insertAdjacentHTML('beforeend', `<br><small style="color:#6b7280">${data.source === 'ai' ? 'AI-generated' : 'Standard advice (AI unavailable)'}</small>`);
+                        const sourceLabel = data.source === 'ai'
+                            ? 'AI answer based on approved advice'
+                            : data.source === 'advice'
+                                ? 'From the approved advice library'
+                                : 'Standard heat-safety guidance';
+                        out.insertAdjacentHTML('beforeend', `<br><small style="color:#6b7280">${sourceLabel}</small>`);
                 }).catch(() => { out.textContent = 'Could not get an answer right now.'; });
             };
 

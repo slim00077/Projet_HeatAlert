@@ -23,13 +23,16 @@ test('a resident can add an advice with an image', function () {
     $this->actingAs(User::factory()->create())
         ->post(route('advice.store'), [
             'advice_category_id' => $category->id,
+            'risk_level' => 'low',
             'title' => 'Drink water',
             'content' => 'Stay hydrated.',
+            'is_approved' => true,
             'image' => UploadedFile::fake()->createWithContent('tip.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')),
         ])
         ->assertRedirect();
 
-    $this->assertDatabaseHas('advice', ['title' => 'Drink water']);
+    $this->assertDatabaseHas('advice', ['title' => 'Drink water', 'is_approved' => false]);
+    $this->get(route('advice.index'))->assertDontSee('Drink water');
     Storage::disk('public')->assertExists(Advice::first()->image_path);
 });
 

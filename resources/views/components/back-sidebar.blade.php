@@ -19,6 +19,7 @@
         <a href="{{ route('admin.power-outages.index') }}" @class(['is-active' => request()->routeIs('admin.power-outages.*', 'admin.outage-reports.*')])><x-icon name="bolt" /> Power Outages</a>
         <a href="{{ route('admin.advices.index') }}" @class(['is-active' => request()->routeIs('admin.advices.*')])><x-icon name="bulb" /> Advice</a>
         <a href="{{ route('admin.advice-categories.index') }}" @class(['is-active' => request()->routeIs('admin.advice-categories.*')])><x-icon name="file" /> Advice Categories</a>
+        <a href="{{ route('admin.quizzes.statistics') }}" @class(['is-active' => request()->routeIs('admin.quizzes.*')])><x-icon name="grid" /> Quiz Statistics</a>
         <a href="{{ route('admin.settings') }}" @class(['is-active' => request()->routeIs('admin.settings')])><x-icon name="cog" /> Settings</a>
     </nav>
 

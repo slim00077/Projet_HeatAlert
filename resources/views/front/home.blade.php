@@ -189,6 +189,19 @@
 
 <section class="home-section">
     <div class="container">
+        <div class="home-cta quiz-home-cta">
+            <div>
+                <span class="home-eyebrow">HeatAlert Challenge</span>
+                <h2>How much do you know about heat safety?</h2>
+                <p>Take a quick quiz, get immediate explanations and learn practical ways to protect yourself and your family.</p>
+            </div>
+            <a href="{{ route('quizzes.index') }}" class="btn btn-primary btn-large">Test your knowledge</a>
+        </div>
+    </div>
+</section>
+
+<section class="home-section">
+    <div class="container">
         <div class="home-cta">
             <div>
                 <h2>Be part of a safer community</h2>

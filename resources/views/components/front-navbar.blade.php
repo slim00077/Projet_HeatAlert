@@ -27,7 +27,8 @@
             <a href="{{ route('front.alerts.index') }}" @class(['is-active' => request()->routeIs('front.alerts.*')])>Heat Alerts</a>
             <a href="{{ route('front.power-outages.index') }}" @class(['is-active' => request()->routeIs('front.power-outages.*')])>Power Outages</a>
             <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
-            <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*')])>Advice</a>
+            <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*', 'assistant.index')])>Advice</a>
+            <a href="{{ route('quizzes.index') }}" @class(['is-active' => request()->routeIs('quizzes.*')])>Challenge</a>
             <a href="{{ route('pages.about') }}" @class(['is-active' => request()->routeIs('pages.about')])>About</a>
 
         </nav>

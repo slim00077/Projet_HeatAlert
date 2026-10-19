@@ -76,6 +76,7 @@ class DatabaseSeeder extends Seeder
             ManagerSeeder::class,
             CoolSpotSeeder::class,
             AdviceSeeder::class,
+            QuizSeeder::class,
             PowerOutageSeeder::class,
             OutageReportSeeder::class,
         ]);

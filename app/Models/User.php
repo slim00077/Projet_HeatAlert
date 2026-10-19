@@ -118,4 +118,20 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(OutageReport::class);
     }
+
+    public function quizAttempts(): HasMany
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
+    public function quizBadges(): BelongsToMany
+    {
+        return $this->belongsToMany(QuizBadge::class, 'quiz_badge_user')
+            ->withPivot('awarded_at');
+    }
+
+    public function adviceConversations(): HasMany
+    {
+        return $this->hasMany(AdviceConversation::class);
+    }
 }
