@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Contracts\AiTextGenerator;
+use App\Services\AnthropicTextGenerator;
+use App\Services\GeminiTextGenerator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +14,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(AiTextGenerator::class, fn () => match (config('services.ai.provider')) {
+            'gemini' => new GeminiTextGenerator(config('services.gemini.key'), config('services.gemini.model')),
+            default => new AnthropicTextGenerator(config('services.anthropic.key'), config('services.anthropic.model')),
+        });
     }
 
     /**

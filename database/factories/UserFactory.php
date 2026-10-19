@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Neighborhood;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +41,14 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => ['role' => User::ROLE_ADMIN]);
+    }
+
+    public function manager(?Neighborhood $neighborhood = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => User::ROLE_MANAGER,
+            'neighborhood_id' => $neighborhood?->id ?? Neighborhood::factory(),
+        ]);
     }
 
     public function unverified(): static

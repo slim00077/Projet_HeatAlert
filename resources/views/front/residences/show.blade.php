@@ -18,6 +18,8 @@
 
         <x-flash-messages />
 
+        @include('partials.residence-status')
+
         <div class="media-preview media-hero">
             @if ($residence->hasVideo())
                 <video src="{{ $residence->videoUrl() }}" controls preload="metadata"></video>
@@ -29,8 +31,12 @@
         <div class="page-header">
             <h2>Reports</h2>
             <div>
-                <a href="{{ route('resident-reports.create', ['residence_id' => $residence->id]) }}" class="btn btn-primary">Add Report</a>
-                <a href="{{ route('residences.edit', $residence) }}" class="btn btn-outline">Edit</a>
+                @unless (auth()->user()->isManager())
+                    <a href="{{ route('resident-reports.create', ['residence_id' => $residence->id]) }}" class="btn btn-primary">Add Report</a>
+                @endunless
+                @can('update', $residence)
+                    <a href="{{ route('residences.edit', $residence) }}" class="btn btn-outline">Edit</a>
+                @endcan
             </div>
         </div>
 
@@ -58,6 +64,10 @@
                 @endforelse
             </tbody>
         </table>
+
+        @if (auth()->user()->isManager())
+            @include('partials.residence-members')
+        @endif
 
         <p class="back-link">
             <a href="{{ route('residences.index') }}" class="btn btn-outline">← Back to my residences</a>

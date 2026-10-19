@@ -44,7 +44,7 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td class="wrap"><a href="{{ route('resident-reports.show', $report) }}">{{ $report->title }}</a></td>
-                    <td>{{ $report->residence->name }}</td>
+                    <td>{{ $report->residence->name }} @if ($report->residence->hasHeatAlert())<span class="status-badge status-pending">Heat Alert</span>@endif</td>
                     <td>{{ $report->user->name }}</td>
                     <td><x-status-badge :status="$report->status" /></td>
                     <td>{{ $report->reported_at->format('Y-m-d') }}</td>

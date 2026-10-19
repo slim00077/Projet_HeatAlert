@@ -35,4 +35,31 @@ return [
         ],
     ],
 
+    // Optional: with a token the map also offers Mapbox street/satellite layers (OpenStreetMap is always available).
+    'mapbox' => [
+        'token' => env('MAPBOX_TOKEN'),
+    ],
+
+    // AI heat advisor. Provider "gemini" or "anthropic"; by default Gemini when its key is set.
+    'ai' => [
+        'provider' => env('AI_PROVIDER', env('GEMINI_API_KEY') ? 'gemini' : 'anthropic'),
+    ],
+
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
+    ],
+
+    // AI heat advisor (Claude). Without a key the advisor falls back to rule-based text.
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+    ],
+
+    'open_meteo' => [
+        'url' => env('OPEN_METEO_URL', 'https://api.open-meteo.com/v1/forecast'),
+        // Path to a CA bundle when PHP has no curl.cainfo configured (common on Windows).
+        'ca_bundle' => env('HTTP_CA_BUNDLE'),
+    ],
+
 ];
