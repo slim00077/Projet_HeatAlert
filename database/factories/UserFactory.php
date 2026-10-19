@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Neighborhood;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -30,12 +31,26 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => User::ROLE_RESIDENT,
         ];
     }
 
     /**
      * Indicate that the model's email address should be unverified.
      */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => ['role' => User::ROLE_ADMIN]);
+    }
+
+    public function manager(?Neighborhood $neighborhood = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => User::ROLE_MANAGER,
+            'neighborhood_id' => $neighborhood?->id ?? Neighborhood::factory(),
+        ]);
+    }
+
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [

@@ -1,0 +1,85 @@
+# Zero-setup stack:  docker compose up --build   then open http://localhost:8080
+#
+# Everything is automatic on the first start: the database is created, the migrations run,
+# the demo accounts and data are loaded (only when the database is empty) and an app key is
+# generated. Defaults live in docker/defaults.env; to add your own keys (Gemini, SMTP...) create
+# an optional .env.docker from .env.docker.example, it overrides the defaults.
+x-env: &env
+  env_file:
+    - path: docker/defaults.env
+    - path: .env.docker
+      required: false
+
+services:
+  app:
+    <<: *env
+    build:
+      context: .
+      target: app
+    image: heatalert-app
+    restart: unless-stopped
+    volumes:
+      - storage:/var/www/html/storage
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 90
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - storage:/var/www/html/storage:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
+  queue:
+    <<: *env
+    image: heatalert-app
+    pull_policy: never  # built by the app service
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3 --sleep=3
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_healthy
+
+  scheduler:
+    <<: *env
+    image: heatalert-app
+    pull_policy: never  # built by the app service
+    restart: unless-stopped
+    command: php artisan schedule:work
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: heatalert_db
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  dbdata:
+  storage:

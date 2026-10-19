@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b2d52"/>
+      <stop offset="0.35" stop-color="#8a3f5c"/>
+      <stop offset="0.62" stop-color="#e2623f"/>
+      <stop offset="0.82" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#fcd38a"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff7d6"/>
+      <stop offset="0.35" stop-color="#ffd37a" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffb347" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1230" cy="470" r="260" fill="url(#sun)"/>
+  <circle cx="1230" cy="470" r="46" fill="#fff4cc"/>
+  <g fill="#7a3a52" opacity="0.55">
+    <rect x="0" y="560" width="90" height="340"/><rect x="100" y="520" width="70" height="380"/>
+    <rect x="180" y="580" width="110" height="320"/><rect x="300" y="540" width="60" height="360"/>
+    <path d="M380 900V560l50-40 50 40v340z"/><rect x="500" y="590" width="120" height="310"/>
+    <rect x="640" y="530" width="70" height="370"/><rect x="730" y="575" width="100" height="325"/>
+  </g>
+  <g fill="#4a2a47" opacity="0.8">
+    <rect x="860" y="610" width="110" height="290"/><rect x="990" y="580" width="80" height="320"/>
+    <path d="M1090 900V600h60l20-50 20 50h60v300z"/><rect x="1290" y="620" width="100" height="280"/>
+    <rect x="1410" y="570" width="70" height="330"/><rect x="1500" y="600" width="100" height="300"/>
+    <path d="M1310 540v-60h8v60zM1290 480l28-20 28 20z"/>
+  </g>
+  <g fill="#241c36">
+    <rect x="0" y="700" width="160" height="200"/><rect x="170" y="660" width="120" height="240"/>
+    <rect x="300" y="720" width="190" height="180"/><rect x="500" y="680" width="110" height="220"/>
+    <rect x="620" y="730" width="260" height="170"/><rect x="900" y="700" width="140" height="200"/>
+    <rect x="1050" y="740" width="250" height="160"/><rect x="1310" y="690" width="140" height="210"/>
+    <rect x="1460" y="720" width="140" height="180"/>
+    <g stroke="#241c36" stroke-width="10" fill="none" stroke-linecap="round">
+      <path d="M130 700V560M130 560q-40-30-80-20M130 560q40-30 80-20M130 560q-30-50-60-60M130 560q30-50 60-60"/>
+      <path d="M1480 720V590M1480 590q-40-30-80-20M1480 590q40-30 80-20M1480 590q-30-45-60-55M1480 590q30-45 60-55"/>
+    </g>
+  </g>
+</svg>
