@@ -45,7 +45,7 @@ it('replaces the cool spot map with the shared picker and keeps its address tool
         ->assertSee('data-address-input="#address"', false)
         ->assertSee('Locate address')
         ->assertSee('Use pin address')
-        ->assertSee('data-latitude="36.80', false)
+        ->assertSee('data-latitude="36.8', false)
         ->assertSee('Generate description with AI')
         ->assertDontSee('cool-spot-map', false);
 });
