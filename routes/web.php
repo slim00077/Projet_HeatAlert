@@ -16,6 +16,7 @@ use App\Http\Controllers\MapAlertController;
 use App\Http\Controllers\MapDataController;
 use App\Http\Controllers\MyOutageReportController;
 use App\Http\Controllers\NeighborhoodController;
+use App\Http\Controllers\OutageImpactSummaryController;
 use App\Http\Controllers\OutageReportController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PowerOutageController;
@@ -30,7 +31,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)->name('home');
 
 Route::get('/outages', [PowerOutageController::class, 'publicIndex'])->name('front.power-outages.index');
-Route::get('/outages/{powerOutage}', [PowerOutageController::class, 'publicShow'])->name('front.power-outages.show');
+Route::get('/outages/history', [PowerOutageController::class, 'history'])->name('front.power-outages.history');
+Route::get('/outages/{powerOutage}', [PowerOutageController::class, 'publicShow'])
+    ->whereNumber('powerOutage')
+    ->name('front.power-outages.show');
 
 // Login, registration, logout, password reset, email verification and 2FA routes come from Fortify.
 
@@ -115,6 +119,9 @@ Route::middleware(['auth', 'verified', 'admin'])
             ->name('admin.power-outages.create');
         Route::post('/power-outages', [PowerOutageController::class, 'store'])
             ->name('admin.power-outages.store');
+        Route::post('/power-outages/{powerOutage}/impact-summary', OutageImpactSummaryController::class)
+            ->middleware('throttle:10,1')
+            ->name('admin.power-outages.impact-summary');
         Route::get('/power-outages/{powerOutage}', [PowerOutageController::class, 'show'])
             ->name('admin.power-outages.show');
         Route::get('/power-outages/{powerOutage}/edit', [PowerOutageController::class, 'edit'])

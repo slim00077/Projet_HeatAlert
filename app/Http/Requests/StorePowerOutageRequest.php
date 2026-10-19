@@ -18,13 +18,14 @@ class StorePowerOutageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'area' => ['required', 'string', 'max:255'],
-            'status' => ['required', 'in:planned,in_progress,resolved'],
+            'title' => ['required', 'string', 'min:5', 'max:255'],
+            'neighborhood_ids' => ['required', 'array', 'min:1'],
+            'neighborhood_ids.*' => ['required', 'integer', 'distinct', 'exists:neighborhoods,id'],
+            'status' => ['required', 'in:planned,in_progress'],
             'severity' => ['required', 'in:low,moderate,high,critical'],
-            'started_at' => ['nullable', 'date'],
-            'estimated_end_at' => ['nullable', 'date', 'after_or_equal:started_at'],
-            'description' => ['nullable', 'string'],
+            'started_at' => ['required', 'date'],
+            'estimated_end_at' => ['required', 'date', 'after:started_at'],
+            'description' => ['required', 'string', 'min:10'],
         ];
     }
 }

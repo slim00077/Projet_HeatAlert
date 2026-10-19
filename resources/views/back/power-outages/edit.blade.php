@@ -11,7 +11,7 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.power-outages.update', $powerOutage) }}" method="POST" class="panel-form">
+        <form action="{{ route('admin.power-outages.update', $powerOutage) }}" method="POST" class="panel-form" novalidate data-outage-form>
             @csrf
             @method('PUT')
             @include('back.power-outages.partials.form', ['powerOutage' => $powerOutage, 'submitLabel' => 'Update outage'])

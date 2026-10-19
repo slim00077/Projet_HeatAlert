@@ -23,7 +23,7 @@ class HomeController extends Controller
             'latestAlerts' => (clone $activeAlerts)->limit(3)->get(),
             'coolSpotsCount' => CoolSpot::where('is_active', true)->count(),
             'coolSpots' => CoolSpot::with('type')->where('is_active', true)->latest()->limit(3)->get(),
-            'outagesCount' => PowerOutage::where('status', '!=', 'resolved')->count(),
+            'outagesCount' => PowerOutage::active()->count(),
             'adviceCount' => Advice::count(),
             'advices' => Advice::with('category')->latest()->limit(3)->get(),
         ]);
