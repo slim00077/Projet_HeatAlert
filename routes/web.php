@@ -72,6 +72,9 @@ Route::get('/advice', [AdviceCatalogController::class, 'index'])->name('advice.i
 Route::get('/advice/{advice}', [AdviceCatalogController::class, 'show'])->name('advice.show');
 
 Route::get('/cool-spots', [CoolSpotController::class, 'index'])->name('cool-spots.index');
+Route::post('/cool-spots/recommend', [CoolSpotController::class, 'recommend'])
+    ->middleware(['auth', 'verified', 'throttle:10,1'])
+    ->name('cool-spots.recommend');
 Route::get('/cool-spots/{coolSpot}', [CoolSpotController::class, 'show'])->name('cool-spots.show');
 
 // Admin
@@ -138,6 +141,10 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         // Cool Spots - Back Office
         Route::name('admin.')->group(function () {
+            Route::post('cool-spots/generate-description', [AdminCoolSpotController::class, 'generateDescription'])
+                ->middleware('throttle:10,1')
+                ->name('cool-spots.generate-description');
+
             Route::resource('cool-spot-types', AdminCoolSpotTypeController::class)
                 ->except('show');
 
