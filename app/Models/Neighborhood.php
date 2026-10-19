@@ -6,6 +6,7 @@ use App\Enums\Severity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Neighborhood extends Model
@@ -40,6 +41,11 @@ class Neighborhood extends Model
     public function heatAlerts(): HasMany
     {
         return $this->hasMany(HeatAlert::class);
+    }
+
+    public function powerOutages(): BelongsToMany
+    {
+        return $this->belongsToMany(PowerOutage::class);
     }
 
     public function activeAlerts(): HasMany

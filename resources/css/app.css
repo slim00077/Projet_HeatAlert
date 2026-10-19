@@ -9,6 +9,11 @@
     --font-sans: 'Inter', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
 }
 
+.status-cancelled {
+    background: #e5e7eb;
+    color: #374151;
+}
+
 /* ==========================================================================
    HeatAlert design tokens
    ========================================================================== */
@@ -1048,6 +1053,209 @@ img, svg { max-width: 100%; }
     border-color: var(--color-cool);
 }
 
+.field input.is-invalid,
+.field select.is-invalid,
+.field textarea.is-invalid {
+    border-color: #b91c1c;
+}
+
+.field input.is-invalid:focus,
+.field select.is-invalid:focus,
+.field textarea.is-invalid:focus {
+    outline-color: rgba(185, 28, 28, 0.2);
+}
+
+.field-guidance {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--color-ink-soft);
+    font-size: 0.8rem;
+}
+
+.field-counter {
+    flex: 0 0 auto;
+    text-align: right;
+}
+
+.field-counter.is-valid {
+    color: #15803d;
+}
+
+.outage-neighborhoods {
+    min-width: 0;
+    border: 0;
+    padding: 0;
+}
+
+.outage-neighborhoods legend {
+    margin-bottom: 0.5rem;
+    color: var(--color-ink);
+    font-weight: 600;
+}
+
+.outage-neighborhood-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.65rem;
+}
+
+.outage-neighborhood-option {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    cursor: pointer;
+}
+
+.outage-neighborhood-option:has(input:checked) {
+    border-color: var(--color-cool);
+    background: color-mix(in srgb, var(--color-cool) 8%, var(--surface));
+}
+
+.outage-neighborhood-option input {
+    width: auto;
+    accent-color: var(--color-cool);
+}
+
+.outage-neighborhoods.is-invalid .outage-neighborhood-option {
+    border-color: #b91c1c;
+}
+
+.outage-map-card {
+    margin-block: 1.5rem;
+    padding: 1.25rem;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.outage-map-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+}
+
+.outage-map-header h2 {
+    margin: 0 0 0.3rem;
+    font-size: 1.2rem;
+}
+
+.outage-map-header p,
+.outage-map-popup p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.outage-map-estimate {
+    flex: 0 0 auto;
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius-md);
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.outage-map-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    margin-bottom: 0.9rem;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.outage-map-summary .field-hint {
+    flex-basis: 100%;
+}
+
+.outage-map {
+    height: 420px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    z-index: 0;
+}
+
+.outage-map-popup h3 {
+    margin: 0 0 0.45rem;
+}
+
+.outage-map-popup ul {
+    margin: 0.35rem 0 0;
+    padding-left: 1.15rem;
+}
+
+.outage-map-popup li + li {
+    margin-top: 0.4rem;
+}
+
+.outage-map-attribution {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.neighborhood-location-map {
+    height: 360px;
+    margin-top: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    z-index: 0;
+}
+
+.neighborhood-location-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.neighborhood-location-actions .field-hint {
+    margin: 0;
+}
+
+.outage-impact-summary {
+    margin-block: 1.5rem;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.outage-impact-summary-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.outage-impact-summary-header h2 {
+    margin: 0 0 0.3rem;
+    font-size: 1.2rem;
+}
+
+.outage-impact-summary-result {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--blue-soft);
+    border-radius: var(--radius-md);
+    white-space: pre-line;
+}
+
+.outage-impact-summary-result p {
+    margin: 0.5rem 0 0;
+}
+
 .form-actions {
     display: flex;
     gap: 0.75rem;
@@ -1381,10 +1589,14 @@ img, svg { max-width: 100%; }
     .home-about { grid-template-columns: 1fr; gap: 2rem; }
     .home-section { padding: 3rem 0; }
     .home-cta { padding: 2rem; }
+    .outage-map-header { flex-direction: column; }
 }
 
 @media (max-width: 560px) {
     .home-stats-grid { grid-template-columns: 1fr; }
+    .outage-map { height: 340px; }
+    .outage-map-card { padding: 1rem; }
+    .neighborhood-location-map { height: 300px; }
 }
 
 /* ==========================================================================

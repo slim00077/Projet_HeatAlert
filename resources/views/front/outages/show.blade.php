@@ -14,6 +14,7 @@
                         'planned' => ['label' => 'Planned', 'class' => 'status-planned'],
                         'in_progress' => ['label' => 'In progress', 'class' => 'status-in_progress'],
                         'resolved' => ['label' => 'Resolved', 'class' => 'status-resolved'],
+                        'cancelled' => ['label' => 'Cancelled', 'class' => 'status-cancelled'],
                     ];
                     $status = $statusMap[$powerOutage->status] ?? ['label' => ucfirst($powerOutage->status), 'class' => 'status-default'];
                 @endphp
@@ -24,7 +25,7 @@
                 </div>
 
                 <h1>{{ $powerOutage->title }}</h1>
-                <p class="muted-text">{{ $powerOutage->area }}</p>
+                <p class="muted-text">{{ $powerOutage->affectedAreasLabel() }}</p>
                 <p>{{ $powerOutage->description ?: 'No detailed description has been published yet for this outage.' }}</p>
 
                 <div class="meta-grid">
@@ -64,6 +65,15 @@
                     <a href="{{ route('login') }}" class="btn btn-primary">Sign in</a>
                 @endauth
             </div>
+        </div>
+
+        <div class="container">
+            @include('partials.outage-map', [
+                'mapId' => 'outage-map-detail',
+                'history' => false,
+                'mapHeading' => 'Affected neighborhoods',
+                'mapDescription' => 'The recorded centers of neighborhoods selected for this outage.',
+            ])
         </div>
 
         <div class="container report-section">

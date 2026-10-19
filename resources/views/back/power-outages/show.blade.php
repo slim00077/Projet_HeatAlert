@@ -22,11 +22,32 @@
                 <span class="severity-pill severity-{{ $powerOutage->severity }}">{{ ucfirst($powerOutage->severity) }}</span>
             </div>
 
-            <p><strong>Area:</strong> {{ $powerOutage->area }}</p>
+            <p><strong>Affected neighborhoods:</strong> {{ $powerOutage->affectedAreasLabel() }}</p>
             <p><strong>Started:</strong> {{ $powerOutage->started_at?->format('d M Y H:i') ?? 'Not available' }}</p>
             <p><strong>Estimated end:</strong> {{ $powerOutage->estimated_end_at?->format('d M Y H:i') ?? 'Not announced' }}</p>
             <p>{{ $powerOutage->description ?: 'No description provided.' }}</p>
         </div>
+
+        <section class="outage-impact-summary" aria-labelledby="outage-impact-summary-title">
+            <div class="outage-impact-summary-header">
+                <div>
+                    <h2 id="outage-impact-summary-title">Outage impact summary</h2>
+                    <p class="field-hint">Creates an advisory summary from outage details, recorded neighborhood estimates, and resident reports. Verify it before acting.</p>
+                </div>
+                <button
+                    type="button"
+                    class="btn btn-outline"
+                    data-outage-impact-summary
+                    data-url="{{ route('admin.power-outages.impact-summary', $powerOutage) }}"
+                    data-csrf="{{ csrf_token() }}"
+                >Generate summary</button>
+            </div>
+            <p class="field-hint" data-outage-impact-summary-status role="status" aria-live="polite"></p>
+            <div class="outage-impact-summary-result" data-outage-impact-summary-result hidden>
+                <strong data-outage-impact-summary-source></strong>
+                <p data-outage-impact-summary-text></p>
+            </div>
+        </section>
 
         <div class="table-card">
             <div class="table-header-row">

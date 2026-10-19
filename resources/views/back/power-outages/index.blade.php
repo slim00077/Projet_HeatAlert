@@ -16,12 +16,19 @@
             <div class="alert-success">{{ session('success') }}</div>
         @endif
 
+        @include('partials.outage-map', [
+            'mapId' => 'admin-outage-map',
+            'history' => false,
+            'mapHeading' => 'All outage locations',
+            'mapDescription' => 'Explore every outage alert by its assigned neighborhoods.',
+        ])
+
         <div class="table-card">
             <table>
                 <thead>
                     <tr>
                         <th>Title</th>
-                        <th>Area</th>
+                        <th>Neighborhoods</th>
                         <th>Status</th>
                         <th>Severity</th>
                         <th>Reports</th>
@@ -32,7 +39,7 @@
                     @forelse ($outages as $outage)
                         <tr>
                             <td>{{ $outage->title }}</td>
-                            <td>{{ $outage->area }}</td>
+                            <td>{{ $outage->affectedAreasLabel() }}</td>
                             <td><span class="status-badge status-{{ $outage->status }}">{{ ucfirst(str_replace('_', ' ', $outage->status)) }}</span></td>
                             <td><span class="severity-pill severity-{{ $outage->severity }}">{{ ucfirst($outage->severity) }}</span></td>
                             <td>{{ $outage->reports_count }}</td>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Neighborhood;
 use App\Models\OutageReport;
 use App\Models\PowerOutage;
 use App\Models\User;
@@ -21,27 +22,109 @@ test('resident cannot access power outage management', function () {
 });
 
 test('front-office outage list is available', function () {
-    PowerOutage::factory()->create([
+    $neighborhood = Neighborhood::factory()->create([
+        'name' => 'North avenue',
+        'latitude' => 36.82,
+        'longitude' => 10.2,
+        'population' => 2500,
+        'vulnerable_population' => 300,
+    ]);
+    $powerOutage = PowerOutage::factory()->create([
         'title' => 'North side outage',
-        'area' => 'North avenue',
         'status' => 'planned',
         'severity' => 'moderate',
     ]);
+    $powerOutage->neighborhoods()->attach($neighborhood);
 
     $response = $this->get(route('front.power-outages.index'));
 
     $response->assertOk()
         ->assertSee('Power outages')
-        ->assertSee('North side outage');
+        ->assertSee('North side outage')
+        ->assertSee('North avenue')
+        ->assertSee('data-outage-map')
+        ->assertSee('Estimated population:')
+        ->assertSee('2,500')
+        ->assertSee('vulnerable residents')
+        ->assertViewHas('estimatedVulnerablePopulation', 300);
+});
+
+test('public outage list separates active alerts from outage history', function () {
+    PowerOutage::factory()->create(['title' => 'Scheduled interruption', 'status' => 'planned']);
+    PowerOutage::factory()->create(['title' => 'Current interruption', 'status' => 'in_progress']);
+    PowerOutage::factory()->create(['title' => 'Restored service', 'status' => 'resolved']);
+    PowerOutage::factory()->create(['title' => 'Cancelled work', 'status' => 'cancelled']);
+
+    $this->get(route('front.power-outages.index'))
+        ->assertOk()
+        ->assertSee('Scheduled interruption')
+        ->assertSee('Current interruption')
+        ->assertSee('Outages on the map')
+        ->assertDontSee('Restored service')
+        ->assertDontSee('Cancelled work')
+        ->assertSee(route('front.power-outages.history'));
+
+    $this->get(route('front.power-outages.history'))
+        ->assertOk()
+        ->assertSee('Restored service')
+        ->assertSee('Cancelled work')
+        ->assertDontSee('Scheduled interruption')
+        ->assertDontSee('Current interruption');
+});
+
+test('outage detail map estimates impact for every affected neighborhood and maps those with coordinates', function () {
+    $mappedNeighborhood = Neighborhood::factory()->create([
+        'name' => 'Mapped district',
+        'latitude' => 36.82,
+        'longitude' => 10.2,
+        'population' => 1500,
+        'vulnerable_population' => 200,
+    ]);
+    $unmappedNeighborhood = Neighborhood::factory()->create([
+        'name' => 'Unmapped district',
+        'latitude' => null,
+        'longitude' => null,
+        'population' => 900,
+        'vulnerable_population' => 100,
+    ]);
+    $powerOutage = PowerOutage::factory()->create(['title' => 'District power cut']);
+    $powerOutage->neighborhoods()->attach([$mappedNeighborhood->id, $unmappedNeighborhood->id]);
+
+    $this->get(route('front.power-outages.show', $powerOutage))
+        ->assertOk()
+        ->assertSee('Affected neighborhoods')
+        ->assertSee('2,400')
+        ->assertSee('affected neighborhoods')
+        ->assertSee('shown on map')
+        ->assertSee('vulnerable residents')
+        ->assertSee('Mapped district')
+        ->assertSee('Unmapped district')
+        ->assertViewHas('affectedNeighborhoods', 2)
+        ->assertViewHas('mappedNeighborhoods', 1)
+        ->assertViewHas('estimatedVulnerablePopulation', 300)
+        ->assertViewHas('mapPoints', fn (array $mapPoints): bool => collect($mapPoints)->pluck('name')->all() === ['Mapped district']);
+});
+
+test('admin create form lists selectable neighborhoods', function () {
+    $neighborhood = Neighborhood::factory()->create(['name' => 'Centre Ville']);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.power-outages.create'))
+        ->assertOk()
+        ->assertSee('Affected neighborhoods')
+        ->assertSee('Centre Ville')
+        ->assertSee('neighborhood_ids[]');
 });
 
 test('admin can create a power outage', function () {
+    $neighborhoods = Neighborhood::factory()->count(2)->create();
+
     $response = $this->actingAs(User::factory()->admin()->create())
         ->post(route('admin.power-outages.store'), [
             'title' => 'Campus blackout',
-            'area' => 'Campus block B',
             'status' => 'in_progress',
             'severity' => 'high',
+            'neighborhood_ids' => $neighborhoods->modelKeys(),
             'started_at' => now()->subHour()->format('Y-m-d\TH:i'),
             'estimated_end_at' => now()->addHour()->format('Y-m-d\TH:i'),
             'description' => 'A transformer issue has interrupted building B.',
@@ -49,17 +132,104 @@ test('admin can create a power outage', function () {
 
     $response->assertRedirect();
     $this->assertDatabaseHas('power_outages', ['title' => 'Campus blackout']);
+    $this->assertDatabaseCount('neighborhood_power_outage', 2);
+});
+
+test('admin must select at least one existing neighborhood for an outage', function () {
+    $response = $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.power-outages.store'), [
+            'title' => 'Campus blackout',
+            'status' => 'in_progress',
+            'severity' => 'high',
+            'neighborhood_ids' => [],
+            'started_at' => now()->subHour()->format('Y-m-d\TH:i'),
+            'estimated_end_at' => now()->addHour()->format('Y-m-d\TH:i'),
+            'description' => 'A transformer issue has interrupted building B.',
+        ]);
+
+    $response->assertSessionHasErrors(['neighborhood_ids']);
+    $this->assertDatabaseMissing('power_outages', ['title' => 'Campus blackout']);
+});
+
+test('admin cannot associate an outage with a nonexistent neighborhood', function () {
+    $response = $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.power-outages.store'), [
+            'title' => 'Campus blackout',
+            'status' => 'in_progress',
+            'severity' => 'high',
+            'neighborhood_ids' => [999999],
+            'started_at' => now()->subHour()->format('Y-m-d\TH:i'),
+            'estimated_end_at' => now()->addHour()->format('Y-m-d\TH:i'),
+            'description' => 'A transformer issue has interrupted building B.',
+        ]);
+
+    $response->assertSessionHasErrors(['neighborhood_ids.0']);
+    $this->assertDatabaseMissing('power_outages', ['title' => 'Campus blackout']);
+});
+
+test('admin cannot create a power outage with text below the minimum lengths', function () {
+    $neighborhood = Neighborhood::factory()->create();
+
+    $response = $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.power-outages.store'), [
+            'title' => 'Tiny',
+            'status' => 'in_progress',
+            'severity' => 'high',
+            'neighborhood_ids' => [$neighborhood->id],
+            'started_at' => now()->subHour()->format('Y-m-d\TH:i'),
+            'estimated_end_at' => now()->addHour()->format('Y-m-d\TH:i'),
+            'description' => 'Short',
+        ]);
+
+    $response->assertSessionHasErrors(['title', 'description']);
+    $this->assertDatabaseMissing('power_outages', ['title' => 'Tiny']);
+});
+
+test('admin must provide a description and both outage dates', function () {
+    $neighborhood = Neighborhood::factory()->create();
+
+    $response = $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.power-outages.store'), [
+            'title' => 'Campus blackout',
+            'status' => 'in_progress',
+            'severity' => 'high',
+            'neighborhood_ids' => [$neighborhood->id],
+        ]);
+
+    $response->assertSessionHasErrors(['description', 'started_at', 'estimated_end_at']);
+    $this->assertDatabaseMissing('power_outages', ['title' => 'Campus blackout']);
+});
+
+test('admin must set an estimated end after the outage start', function () {
+    $neighborhood = Neighborhood::factory()->create();
+
+    $response = $this->actingAs(User::factory()->admin()->create())
+        ->post(route('admin.power-outages.store'), [
+            'title' => 'Campus blackout',
+            'status' => 'in_progress',
+            'severity' => 'high',
+            'neighborhood_ids' => [$neighborhood->id],
+            'started_at' => '2026-10-05T08:00',
+            'estimated_end_at' => '2026-10-05T08:00',
+            'description' => 'A transformer issue has interrupted building B.',
+        ]);
+
+    $response->assertSessionHasErrors([
+        'estimated_end_at' => 'The estimated end at field must be a date after started at.',
+    ]);
+    $this->assertDatabaseMissing('power_outages', ['title' => 'Campus blackout']);
 });
 
 test('admin can update a power outage', function () {
+    $neighborhood = Neighborhood::factory()->create();
     $powerOutage = PowerOutage::factory()->create();
 
     $response = $this->actingAs(User::factory()->admin()->create())
         ->put(route('admin.power-outages.update', $powerOutage), [
             'title' => 'Updated outage',
-            'area' => 'North district',
             'status' => 'resolved',
             'severity' => 'low',
+            'neighborhood_ids' => [$neighborhood->id],
             'started_at' => '2026-10-05T08:00',
             'estimated_end_at' => '2026-10-05T10:00',
             'description' => 'Power service was restored.',
@@ -69,23 +239,202 @@ test('admin can update a power outage', function () {
     $this->assertDatabaseHas('power_outages', [
         'id' => $powerOutage->id,
         'title' => 'Updated outage',
-        'area' => 'North district',
         'status' => 'resolved',
         'severity' => 'low',
+    ]);
+    $this->assertDatabaseHas('neighborhood_power_outage', [
+        'power_outage_id' => $powerOutage->id,
+        'neighborhood_id' => $neighborhood->id,
+    ]);
+});
+
+test('admin cannot update a power outage with text below the minimum lengths', function () {
+    $neighborhood = Neighborhood::factory()->create();
+    $powerOutage = PowerOutage::factory()->create();
+
+    $response = $this->actingAs(User::factory()->admin()->create())
+        ->put(route('admin.power-outages.update', $powerOutage), [
+            'title' => 'Tiny',
+            'status' => 'in_progress',
+            'severity' => 'high',
+            'neighborhood_ids' => [$neighborhood->id],
+            'started_at' => now()->subHour()->format('Y-m-d\TH:i'),
+            'estimated_end_at' => now()->addHour()->format('Y-m-d\TH:i'),
+            'description' => 'Short',
+        ]);
+
+    $response->assertSessionHasErrors(['title', 'description']);
+    $this->assertDatabaseHas('power_outages', [
+        'id' => $powerOutage->id,
+        'title' => $powerOutage->title,
+    ]);
+});
+
+test('admin cannot update a power outage with an estimated end before its start', function () {
+    $neighborhood = Neighborhood::factory()->create();
+    $powerOutage = PowerOutage::factory()->create();
+
+    $response = $this->actingAs(User::factory()->admin()->create())
+        ->put(route('admin.power-outages.update', $powerOutage), [
+            'title' => 'Updated outage',
+            'status' => 'in_progress',
+            'severity' => 'high',
+            'neighborhood_ids' => [$neighborhood->id],
+            'started_at' => '2026-10-05T10:00',
+            'estimated_end_at' => '2026-10-05T09:00',
+            'description' => 'A transformer issue has interrupted building B.',
+        ]);
+
+    $response->assertSessionHasErrors([
+        'estimated_end_at' => 'The estimated end at field must be a date after started at.',
+    ]);
+    $this->assertDatabaseHas('power_outages', [
+        'id' => $powerOutage->id,
+        'title' => $powerOutage->title,
     ]);
 });
 
 test('admin cannot create a power outage with an invalid status', function () {
+    $neighborhood = Neighborhood::factory()->create();
+
     $response = $this->actingAs(User::factory()->admin()->create())
         ->post(route('admin.power-outages.store'), [
             'title' => 'Invalid outage',
-            'area' => 'West district',
             'status' => 'unknown',
             'severity' => 'high',
+            'neighborhood_ids' => [$neighborhood->id],
+            'started_at' => now()->subHour()->format('Y-m-d\TH:i'),
+            'estimated_end_at' => now()->addHour()->format('Y-m-d\TH:i'),
+            'description' => 'An outage details description.',
         ]);
 
     $response->assertSessionHasErrors(['status']);
     $this->assertDatabaseMissing('power_outages', ['title' => 'Invalid outage']);
+});
+
+test('admin can cancel a planned outage and cancelled outages cannot be reopened', function () {
+    $neighborhood = Neighborhood::factory()->create();
+    $powerOutage = PowerOutage::factory()->create(['status' => 'planned']);
+    $powerOutage->neighborhoods()->attach($neighborhood);
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->put(route('admin.power-outages.update', $powerOutage), [
+            'title' => $powerOutage->title,
+            'status' => 'cancelled',
+            'severity' => $powerOutage->severity,
+            'neighborhood_ids' => [$neighborhood->id],
+            'started_at' => $powerOutage->started_at->format('Y-m-d\TH:i'),
+            'estimated_end_at' => $powerOutage->estimated_end_at->format('Y-m-d\TH:i'),
+            'description' => $powerOutage->description,
+        ])
+        ->assertRedirect(route('admin.power-outages.show', $powerOutage));
+
+    $this->assertDatabaseHas('power_outages', [
+        'id' => $powerOutage->id,
+        'status' => 'cancelled',
+    ]);
+
+    $this->put(route('admin.power-outages.update', $powerOutage), [
+        'title' => $powerOutage->title,
+        'status' => 'planned',
+        'severity' => $powerOutage->severity,
+        'neighborhood_ids' => [$neighborhood->id],
+        'started_at' => $powerOutage->started_at->format('Y-m-d\TH:i'),
+        'estimated_end_at' => $powerOutage->estimated_end_at->format('Y-m-d\TH:i'),
+        'description' => $powerOutage->description,
+    ])
+        ->assertSessionHasErrors([
+            'status' => 'Choose a valid status transition for this outage.',
+        ]);
+});
+
+test('admin can advance a planned outage through in-progress to resolved', function () {
+    $neighborhood = Neighborhood::factory()->create();
+    $powerOutage = PowerOutage::factory()->create(['status' => 'planned']);
+    $powerOutage->neighborhoods()->attach($neighborhood);
+    $admin = User::factory()->admin()->create();
+    $attributes = [
+        'title' => $powerOutage->title,
+        'severity' => $powerOutage->severity,
+        'neighborhood_ids' => [$neighborhood->id],
+        'started_at' => $powerOutage->started_at->format('Y-m-d\TH:i'),
+        'estimated_end_at' => $powerOutage->estimated_end_at->format('Y-m-d\TH:i'),
+        'description' => $powerOutage->description,
+    ];
+
+    $this->actingAs($admin)
+        ->put(route('admin.power-outages.update', $powerOutage), [
+            ...$attributes,
+            'status' => 'in_progress',
+        ])
+        ->assertRedirect(route('admin.power-outages.show', $powerOutage));
+
+    $this->assertDatabaseHas('power_outages', [
+        'id' => $powerOutage->id,
+        'status' => 'in_progress',
+    ]);
+
+    $this->put(route('admin.power-outages.update', $powerOutage), [
+        ...$attributes,
+        'status' => 'resolved',
+    ])
+        ->assertRedirect(route('admin.power-outages.show', $powerOutage));
+
+    $this->assertDatabaseHas('power_outages', [
+        'id' => $powerOutage->id,
+        'status' => 'resolved',
+    ]);
+});
+
+test('admin cannot cancel an outage after it has started', function () {
+    $neighborhood = Neighborhood::factory()->create();
+    $powerOutage = PowerOutage::factory()->create(['status' => 'in_progress']);
+    $powerOutage->neighborhoods()->attach($neighborhood);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->put(route('admin.power-outages.update', $powerOutage), [
+            'title' => $powerOutage->title,
+            'status' => 'cancelled',
+            'severity' => $powerOutage->severity,
+            'neighborhood_ids' => [$neighborhood->id],
+            'started_at' => $powerOutage->started_at->format('Y-m-d\TH:i'),
+            'estimated_end_at' => $powerOutage->estimated_end_at->format('Y-m-d\TH:i'),
+            'description' => $powerOutage->description,
+        ])
+        ->assertSessionHasErrors([
+            'status' => 'Choose a valid status transition for this outage.',
+        ]);
+
+    $this->assertDatabaseHas('power_outages', [
+        'id' => $powerOutage->id,
+        'status' => 'in_progress',
+    ]);
+});
+
+test('resolved outage status cannot be changed', function () {
+    $neighborhood = Neighborhood::factory()->create();
+    $powerOutage = PowerOutage::factory()->create(['status' => 'resolved']);
+    $powerOutage->neighborhoods()->attach($neighborhood);
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->put(route('admin.power-outages.update', $powerOutage), [
+            'title' => $powerOutage->title,
+            'status' => 'in_progress',
+            'severity' => $powerOutage->severity,
+            'neighborhood_ids' => [$neighborhood->id],
+            'started_at' => $powerOutage->started_at->format('Y-m-d\TH:i'),
+            'estimated_end_at' => $powerOutage->estimated_end_at->format('Y-m-d\TH:i'),
+            'description' => $powerOutage->description,
+        ])
+        ->assertSessionHasErrors([
+            'status' => 'Choose a valid status transition for this outage.',
+        ]);
+
+    $this->assertDatabaseHas('power_outages', [
+        'id' => $powerOutage->id,
+        'status' => 'resolved',
+    ]);
 });
 
 test('admin can delete a power outage and its reports', function () {
