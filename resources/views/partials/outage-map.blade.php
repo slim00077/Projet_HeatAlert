@@ -1,6 +1,4 @@
-@push('head')
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-@endpush
+@include('partials.map-assets')
 
 <section class="outage-map-card" aria-labelledby="{{ $mapId }}-heading">
     <div class="outage-map-header">
@@ -42,7 +40,6 @@
 </section>
 
 @push('scripts')
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         (() => {
             const element = document.getElementById(@json($mapId));
@@ -50,18 +47,13 @@
                 return;
             }
 
-            if (!window.L) {
+            if (!window.L || !window.HeatMap) {
                 element.textContent = 'The map could not be loaded. Check your internet connection and try again.';
                 return;
             }
 
             const points = JSON.parse(element.dataset.mapPoints);
-            const map = L.map(element).setView([36.82, 10.2], 10);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors',
-                maxZoom: 19,
-            }).addTo(map);
+            const map = HeatMap.create(element, { zoom: 10 });
 
             const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => (
                 { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]

@@ -39,6 +39,13 @@
     --card: #ffffff;
     --surface: #ffffff;
     --surface-alt: #f8fafc;
+    --color-border: var(--border);
+    --color-ink: var(--ink);
+    --color-ink-soft: var(--muted);
+    --color-bg-soft: var(--surface-alt);
+    --color-cool: #2563eb;
+    --color-cool-dark: #1d4ed8;
+    --color-heat-dark: var(--coral-dark);
     --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.05);
     --shadow-card: 0 12px 32px -14px rgba(15, 23, 42, 0.22);
     --radius-lg: 1.1rem;
@@ -934,7 +941,7 @@ img, svg { max-width: 100%; }
     padding-block: 3rem;
 }
 
-.page-header {
+.page-shell .page-header {
     display: flex;
     align-items: end;
     justify-content: space-between;
@@ -1554,7 +1561,7 @@ img, svg { max-width: 100%; }
 .severity-badge { display: inline-flex; align-items: center; padding: 0.2rem 0.65rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
 .severity-badge.soft-orange { color: #b45309; }
 
-.filter-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: end; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.9rem 1rem; margin-bottom: 1rem; }
+.filter-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: end; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.9rem 1rem; margin-bottom: 1rem; }
 .filter-bar .filter-field { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.75rem; color: var(--muted); font-weight: 600; }
 .filter-bar input, .filter-bar select { padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: var(--radius-md); font: inherit; font-size: 0.88rem; background: #fff; color: var(--ink); }
 
@@ -1573,7 +1580,7 @@ img, svg { max-width: 100%; }
 .bar-chart b { color: var(--ink); }
 
 .alert-map { height: 380px; border-radius: var(--radius-lg); border: 1px solid var(--border); margin-bottom: 1.5rem; z-index: 0; }
-.alert-card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border); border-top: 4px solid var(--border); padding: 1.4rem; }
+.alert-card { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border); border-top: 4px solid var(--border); padding: 1.4rem; }
 .alert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
 .alert-card h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
 .alert-card .meta { color: var(--muted); font-size: 0.85rem; margin: 0.2rem 0; }
@@ -1627,7 +1634,7 @@ img, svg { max-width: 100%; }
 .profile-link { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.9rem; }
 .qr-code { width: 200px; height: 200px; margin: 0.6rem 0; }
 .qr-code svg { width: 100%; height: 100%; }
-.recovery-codes ul { list-style: none; padding: 0.8rem; margin: 0 0 1rem; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; }
+.recovery-codes ul { list-style: none; padding: 0.8rem; margin: 0 0 1rem; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; }
 .profile-photo input[type=file] { max-width: 220px; font-size: 0.8rem; }
    Home page sections
    ========================================================================== */
@@ -1696,6 +1703,8 @@ img, svg { max-width: 100%; }
     --card: #162033;
     --surface: #162033;
     --surface-alt: #1c2940;
+    --color-cool: #60a5fa;
+    --color-cool-dark: #93c5fd;
     --ink: #e5e7eb;
     --muted: #9ca3af;
     --border: #2a3a52;
@@ -1736,3 +1745,16 @@ img, svg { max-width: 100%; }
 
 .theme-options { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
 .theme-options .btn.is-selected { border-color: var(--coral); background: var(--coral-soft); color: var(--coral-dark); }
+
+/* Map location picker, outage zone picker, wide admin forms */
+.form-card-wide { max-width: 980px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+.location-picker-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+.location-picker-search { flex: 1 1 220px; min-width: 0; padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); font: inherit; font-size: 0.88rem; }
+.location-picker-map, .zone-picker-map { height: 340px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface-alt); z-index: 0; }
+.location-picker-map.is-tall { height: 400px; }
+.location-picker-status { margin: 0.5rem 0 0; }
+.zone-picker { margin-bottom: 1rem; }
+.zone-dot { display: inline-block; width: 0.8rem; height: 0.8rem; margin: 0 0.25rem 0 0.6rem; border-radius: 50%; border: 2px solid #2563eb; background: rgba(37, 99, 235, 0.25); vertical-align: -0.1rem; }
+.zone-dot.is-selected { border-color: #dc2626; background: rgba(220, 38, 38, 0.7); margin-left: 0; }

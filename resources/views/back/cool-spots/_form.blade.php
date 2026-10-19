@@ -5,10 +5,6 @@
     $active     = old() ? (bool) old('is_active')     : ($coolSpot->is_active ?? true);
 @endphp
 
-@push('head')
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-@endpush
-
 <section class="cool-spot-section">
     <div class="cool-spot-section-heading">
         <span class="cool-spot-step">01</span>
@@ -40,11 +36,8 @@
 
         <div class="form-group cool-spot-fields-wide @error('address') has-error @enderror">
             <label for="address">Address</label>
-            <div class="cool-spot-address-field">
-                <input type="text" id="address" name="address" value="{{ old('address', $coolSpot->address ?? '') }}" maxlength="255" required>
-                <button type="button" class="btn btn-outline" id="cool-spot-search-address">Locate address</button>
-            </div>
-            <p class="cool-spot-help">Enter an address, then locate it on the map, or select the position directly.</p>
+            <input type="text" id="address" name="address" value="{{ old('address', $coolSpot->address ?? '') }}" maxlength="255" required>
+            <p class="cool-spot-help">Type the address, then use "Locate address" on the map below, or drop the pin yourself.</p>
             @error('address') <p class="field-error">{{ $message }}</p> @enderror
         </div>
     </div>
@@ -59,22 +52,14 @@
         </div>
     </div>
 
-    <div class="cool-spot-map-toolbar">
-        <button type="button" class="btn btn-outline" id="cool-spot-use-location">Use my location</button>
-        <button type="button" class="btn btn-outline" id="cool-spot-use-pin-address" disabled>Use pin address</button>
-        <span id="cool-spot-map-status" class="cool-spot-map-status" role="status" aria-live="polite">Click the map to place a pin.</span>
-    </div>
-    <div id="cool-spot-map" class="cool-spot-map"
-         data-lat="{{ old('latitude', $coolSpot->latitude ?? '') }}"
-         data-lng="{{ old('longitude', $coolSpot->longitude ?? '') }}"></div>
-    <div class="cool-spot-coordinates" aria-live="polite">
-        <span>Selected coordinates</span>
-        <strong id="cool-spot-coordinate-readout">No position selected</strong>
-    </div>
-    <input type="hidden" id="latitude" name="latitude" value="{{ old('latitude', $coolSpot->latitude ?? '') }}">
-    <input type="hidden" id="longitude" name="longitude" value="{{ old('longitude', $coolSpot->longitude ?? '') }}">
-    @error('latitude') <p class="field-error">{{ $message }}</p> @enderror
-    @error('longitude') <p class="field-error">{{ $message }}</p> @enderror
+    <x-location-picker
+        :latitude="$coolSpot->latitude ?? null"
+        :longitude="$coolSpot->longitude ?? null"
+        label="Position on the map"
+        hint="Select the exact entrance or the area where residents can cool down."
+        address-input="#address"
+        class="location-picker-map is-tall"
+    />
 </section>
 
 <section class="cool-spot-section">
@@ -148,123 +133,12 @@
 </section>
 
 @push('scripts')
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         (() => {
-            const mapElement = document.getElementById('cool-spot-map');
-            if (!mapElement) return;
-
-            const latitudeInput = document.getElementById('latitude');
-            const longitudeInput = document.getElementById('longitude');
-            const addressInput = document.getElementById('address');
-            const status = document.getElementById('cool-spot-map-status');
-            const readout = document.getElementById('cool-spot-coordinate-readout');
-            const pinAddressButton = document.getElementById('cool-spot-use-pin-address');
-            const form = mapElement.closest('form');
-            const savedLatitude = Number.parseFloat(mapElement.dataset.lat);
-            const savedLongitude = Number.parseFloat(mapElement.dataset.lng);
-            const hasSavedPosition = Number.isFinite(savedLatitude) && Number.isFinite(savedLongitude);
-            const map = L.map(mapElement).setView(
-                hasSavedPosition ? [savedLatitude, savedLongitude] : [36.8065, 10.1815],
-                hasSavedPosition ? 16 : 12
-            );
-            let marker = null;
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors',
-            }).addTo(map);
-
-            const selectPosition = (latitude, longitude, zoom = 16) => {
-                latitudeInput.value = latitude.toFixed(6);
-                longitudeInput.value = longitude.toFixed(6);
-                readout.textContent = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-                status.textContent = 'Position selected. Drag the pin to adjust it.';
-                pinAddressButton.disabled = false;
-
-                if (marker) {
-                    marker.setLatLng([latitude, longitude]);
-                } else {
-                    marker = L.marker([latitude, longitude], { draggable: true }).addTo(map);
-                    marker.on('dragend', (event) => {
-                        const position = event.target.getLatLng();
-                        selectPosition(position.lat, position.lng, 0);
-                    });
-                }
-
-                if (zoom) map.setView([latitude, longitude], zoom);
-            };
-
-            const nominatimRequest = async (endpoint, params) => {
-                const url = new URL(`https://nominatim.openstreetmap.org/${endpoint}`);
-                Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
-                const response = await fetch(url, { headers: { Accept: 'application/json' } });
-                if (!response.ok) throw new Error('Location lookup is temporarily unavailable.');
-                return response.json();
-            };
-
-            map.on('click', (event) => selectPosition(event.latlng.lat, event.latlng.lng));
-
-            document.getElementById('cool-spot-search-address').addEventListener('click', async (event) => {
-                const query = addressInput.value.trim();
-                if (!query) {
-                    addressInput.focus();
-                    status.textContent = 'Enter an address before searching.';
-                    return;
-                }
-
-                const button = event.currentTarget;
-                button.disabled = true;
-                status.textContent = 'Searching for address...';
-                try {
-                    const results = await nominatimRequest('search', {
-                        format: 'jsonv2', limit: '1', countrycodes: 'tn', q: query,
-                    });
-                    if (!results.length) throw new Error('No matching address found in Tunisia.');
-                    const result = results[0];
-                    selectPosition(Number(result.lat), Number(result.lon));
-                } catch (error) {
-                    status.textContent = error.message || 'Unable to find this address.';
-                } finally {
-                    button.disabled = false;
-                }
-            });
-
-            pinAddressButton.addEventListener('click', async () => {
-                pinAddressButton.disabled = true;
-                status.textContent = 'Finding the address for this pin...';
-                try {
-                    const results = await nominatimRequest('reverse', {
-                        format: 'jsonv2', lat: latitudeInput.value, lon: longitudeInput.value,
-                    });
-                    if (!results.display_name) throw new Error('No address was found for this position.');
-                    addressInput.value = results.display_name.slice(0, 255);
-                    status.textContent = 'Address updated from the selected position.';
-                } catch (error) {
-                    status.textContent = error.message || 'Unable to find an address for this position.';
-                } finally {
-                    pinAddressButton.disabled = false;
-                }
-            });
-
-            document.getElementById('cool-spot-use-location').addEventListener('click', () => {
-                if (!navigator.geolocation) {
-                    status.textContent = 'Geolocation is not available in this browser.';
-                    return;
-                }
-
-                status.textContent = 'Finding your location...';
-                navigator.geolocation.getCurrentPosition(
-                    ({ coords }) => selectPosition(coords.latitude, coords.longitude),
-                    () => { status.textContent = 'Location access was denied or unavailable.'; },
-                    { enableHighAccuracy: true, timeout: 10000 }
-                );
-            });
-
-            if (hasSavedPosition) selectPosition(savedLatitude, savedLongitude, 0);
-            requestAnimationFrame(() => map.invalidateSize());
-
             const openingHoursInput = document.getElementById('opening_hours');
+            if (!openingHoursInput) return;
+
+            const form = openingHoursInput.closest('form');
             const opensAtInput = document.getElementById('opening-from');
             const closesAtInput = document.getElementById('opening-until');
             const alwaysOpenInput = document.getElementById('opening-always-open');

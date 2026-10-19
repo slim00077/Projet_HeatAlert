@@ -33,7 +33,7 @@ class PowerOutageController extends Controller
     {
         return view('back.power-outages.create', [
             'powerOutage' => new PowerOutage,
-            'neighborhoods' => Neighborhood::query()->orderBy('name')->get(['id', 'name']),
+            'neighborhoods' => Neighborhood::query()->orderBy('name')->get(['id', 'name', 'latitude', 'longitude']),
             'statusOptions' => [
                 PowerOutage::STATUS_PLANNED => 'Planned',
                 PowerOutage::STATUS_IN_PROGRESS => 'In progress',
@@ -77,7 +77,7 @@ class PowerOutageController extends Controller
 
         return view('back.power-outages.edit', [
             'powerOutage' => $powerOutage,
-            'neighborhoods' => Neighborhood::query()->orderBy('name')->get(['id', 'name']),
+            'neighborhoods' => Neighborhood::query()->orderBy('name')->get(['id', 'name', 'latitude', 'longitude']),
             'statusOptions' => array_intersect_key($allStatusOptions, array_flip($powerOutage->availableStatuses())),
         ]);
     }
