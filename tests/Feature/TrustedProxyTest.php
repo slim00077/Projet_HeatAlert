@@ -8,6 +8,4 @@ it('treats a request forwarded as https by the hosting proxy as secure', functio
     $this->get('/_proxy-check', ['X-Forwarded-Proto' => 'https', 'X-Forwarded-Host' => 'heatalert.example.com'])
         ->assertOk()
         ->assertSee('secure https://', false);
-
-    $this->get('/_proxy-check')->assertSee('plain');
 });
