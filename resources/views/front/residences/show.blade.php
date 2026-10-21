@@ -29,7 +29,7 @@
         </div>
 
         <div class="page-header">
-            <h2>Reports</h2>
+            <h2>Reports &amp; incident response</h2>
             <div>
                 @unless (auth()->user()->isManager())
                     <a href="{{ route('resident-reports.create', ['residence_id' => $residence->id]) }}" class="btn btn-primary">Add Report</a>
@@ -40,30 +40,9 @@
             </div>
         </div>
 
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Report</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Reported at</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($residence->residentReports as $report)
-                    <tr>
-                        <td><a href="{{ route('resident-reports.show', $report) }}">{{ $report->title }}</a></td>
-                        <td>{{ $report->description }}</td>
-                        <td><x-status-badge :status="$report->status" /></td>
-                        <td>{{ $report->reported_at->format('Y-m-d') }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4">No reports for this residence.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+        @include('partials.command-center.residence-panel')
+
+        @include('partials.residence-reports')
 
         @if (auth()->user()->isManager())
             @include('partials.residence-members')
