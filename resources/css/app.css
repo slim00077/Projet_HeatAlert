@@ -603,6 +603,8 @@ img, svg { max-width: 100%; }
 .sidebar nav a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
 .sidebar nav a.is-active { background: var(--coral); color: #fff; box-shadow: 0 8px 16px -8px rgba(255, 107, 107, 0.8); }
 .sidebar nav a .icon { width: 1.1rem; height: 1.1rem; }
+.sidebar-group { margin: 0.9rem 0 0.2rem; padding: 0 0.9rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255, 255, 255, 0.45); }
+.sidebar nav .sidebar-group:first-child { margin-top: 0; }
 
 .admin-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
@@ -1530,6 +1532,7 @@ img, svg { max-width: 100%; }
     .admin-body { flex-direction: column; }
     .sidebar { position: static; width: 100%; height: auto; padding: 1rem; }
     .sidebar nav { flex-direction: row; flex-wrap: wrap; }
+    .sidebar-group { display: none; }
     .sidebar h2 { padding-bottom: 0.8rem; }
     .admin-navbar, .admin-content { padding-inline: 1rem; }
 }

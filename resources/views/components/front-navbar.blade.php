@@ -30,9 +30,13 @@
 
             <a href="{{ route('front.alerts.index') }}" @class(['is-active' => request()->routeIs('front.alerts.*')])>Heat Alerts</a>
             <a href="{{ route('front.power-outages.index') }}" @class(['is-active' => request()->routeIs('front.power-outages.*')])>Power Outages</a>
-            <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
+            @unless (auth()->user()?->isManager())
+                <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
+            @endunless
             <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*')])>Advice</a>
-            <a href="{{ route('pages.about') }}" @class(['is-active' => request()->routeIs('pages.about')])>About</a>
+            @guest
+                <a href="{{ route('pages.about') }}" @class(['is-active' => request()->routeIs('pages.about')])>About</a>
+            @endguest
 
         </nav>
 

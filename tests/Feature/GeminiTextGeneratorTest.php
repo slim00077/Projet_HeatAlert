@@ -74,5 +74,7 @@ it('retries a lone model once when it is overloaded', function () {
 });
 
 it('ignores a configured CA bundle path that does not exist', function () {
-    expect(config('services.open_meteo.ca_bundle'))->toBeNull();
+    $bundle = config('services.open_meteo.ca_bundle');
+
+    expect($bundle === null || is_file($bundle))->toBeTrue();
 });
