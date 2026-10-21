@@ -6,12 +6,15 @@ use App\Http\Controllers\AdminAdviceCategoryController;
 use App\Http\Controllers\AdminAdviceController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdviceCatalogController;
+use App\Http\Controllers\CommandCenterController;
+use App\Http\Controllers\ConstellationController;
 use App\Http\Controllers\CoolSpotController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontHeatAlertController;
 use App\Http\Controllers\HeatAdvisorController;
 use App\Http\Controllers\HeatAlertController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\IncidentLensController;
 use App\Http\Controllers\MapAlertController;
 use App\Http\Controllers\MapDataController;
 use App\Http\Controllers\MyOutageReportController;
@@ -20,10 +23,16 @@ use App\Http\Controllers\OutageReportController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PowerOutageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportFollowUpController;
+use App\Http\Controllers\ReportPhotoController;
 use App\Http\Controllers\ResidenceApprovalController;
 use App\Http\Controllers\ResidenceController;
 use App\Http\Controllers\ResidenceMemberController;
 use App\Http\Controllers\ResidentReportController;
+use App\Http\Controllers\ResponseCaseController;
+use App\Http\Controllers\ResponseConfirmationController;
+use App\Http\Controllers\ResponseTaskController;
+use App\Http\Controllers\ResponseUpdateController;
 use App\Http\Controllers\WeatherSyncController;
 use Illuminate\Support\Facades\Route;
 
@@ -147,6 +156,47 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('residences/{residence}/members/{user}', [ResidenceMemberController::class, 'destroy'])
         ->name('residences.members.destroy');
     Route::resource('resident-reports', ResidentReportController::class);
+
+    // Incident Command Center: response cases, workflow, tasks, timeline and resident verification
+    Route::get('command-center', CommandCenterController::class)->name('command-center.index');
+    Route::get('residences/{residence}/response-cases/create', [ResponseCaseController::class, 'create'])->name('residences.response-cases.create');
+    Route::post('residences/{residence}/response-cases', [ResponseCaseController::class, 'store'])->name('residences.response-cases.store');
+    Route::get('response-cases/{responseCase}', [ResponseCaseController::class, 'show'])->name('response-cases.show');
+    Route::patch('response-cases/{responseCase}', [ResponseCaseController::class, 'update'])->name('response-cases.update');
+    Route::patch('response-cases/{responseCase}/stage', [ResponseCaseController::class, 'stage'])->name('response-cases.stage');
+    Route::post('response-cases/{responseCase}/reports', [ResponseCaseController::class, 'linkReports'])->name('response-cases.reports.store');
+    Route::delete('response-cases/{responseCase}/reports/{residentReport}', [ResponseCaseController::class, 'unlinkReport'])->name('response-cases.reports.destroy');
+    Route::post('response-cases/{responseCase}/tasks', [ResponseTaskController::class, 'store'])->name('response-cases.tasks.store');
+    Route::patch('response-tasks/{responseTask}', [ResponseTaskController::class, 'update'])->name('response-tasks.update');
+    Route::delete('response-tasks/{responseTask}', [ResponseTaskController::class, 'destroy'])->name('response-tasks.destroy');
+    Route::post('response-cases/{responseCase}/updates', [ResponseUpdateController::class, 'store'])->name('response-cases.updates.store');
+    Route::patch('response-updates/{responseUpdate}/publish', [ResponseUpdateController::class, 'publish'])->name('response-updates.publish');
+    Route::post('resident-reports/{residentReport}/confirmation', [ResponseConfirmationController::class, 'store'])->name('resident-reports.confirmation');
+
+    // Command Center AI assistance (Constellation suggestions, Incident Lens on evidence)
+    Route::middleware('throttle:20,1')->group(function () {
+        Route::get('residences/{residence}/response-cases/suggestions', [ResponseCaseController::class, 'suggestForResidence'])->name('residences.response-cases.suggestions');
+        Route::get('response-cases/{responseCase}/suggestions', [ResponseCaseController::class, 'suggestForCase'])->name('response-cases.suggestions');
+    });
+    Route::post('response-cases/{responseCase}/evidence/{residentReport}', [ResponseCaseController::class, 'evidence'])
+        ->middleware('throttle:10,1')
+        ->name('response-cases.evidence');
+
+    // AI Incident Constellation (managers and admins) and AI Incident Lens (report writing)
+    Route::get('constellation', [ConstellationController::class, 'index'])->name('constellation.index');
+    Route::get('constellation/graph', [ConstellationController::class, 'graph'])
+        ->middleware('throttle:30,1')
+        ->name('constellation.graph');
+    Route::post('constellation/investigate', [ConstellationController::class, 'investigate'])
+        ->middleware('throttle:10,1')
+        ->name('constellation.investigate');
+    Route::post('incident-lens/analyze', IncidentLensController::class)
+        ->middleware('throttle:10,1')
+        ->name('incident-lens.analyze');
+    Route::get('report-photos/{residentReport}', ReportPhotoController::class)->name('report-photos.show');
+
+    Route::get('managed-reports/{residentReport}', [ReportFollowUpController::class, 'show'])->name('managed-reports.show');
+    Route::patch('managed-reports/{residentReport}', [ReportFollowUpController::class, 'update'])->name('managed-reports.update');
 });
 
 Route::get('/advisor/neighborhoods/{neighborhood}/brief', [HeatAdvisorController::class, 'brief'])

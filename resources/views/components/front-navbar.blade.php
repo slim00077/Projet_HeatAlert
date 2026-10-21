@@ -15,11 +15,15 @@
 
             @auth
                 @if (auth()->user()->isManager())
-                    <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])>Managed Residences</a>
+                    <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.index', 'residences.show', 'residences.create', 'residences.edit')])>Managed Residences</a>
+                    <a href="{{ route('command-center.index') }}" @class(['is-active' => request()->routeIs('command-center.*', 'response-cases.*', 'residences.response-cases.*')])>Command Center</a>
                     <a href="{{ route('my-outage-reports.index') }}" @class(['is-active' => request()->routeIs('my-outage-reports.*')])>My Outage Reports</a>
                 @elseif (auth()->user()->isResident())
                     <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])>My Residences</a>
-                    <a href="{{ route('resident-reports.index') }}" @class(['is-active' => request()->routeIs('resident-reports.*')])>My Reports</a>
+                    @php
+                        $responseNews = auth()->user()->unreadNotifications()->where('type', \App\Notifications\ResponseCaseUpdated::class)->count();
+                    @endphp
+                    <a href="{{ route('resident-reports.index') }}" @class(['is-active' => request()->routeIs('resident-reports.*')])>My Reports @if ($responseNews > 0)<span class="nav-count" title="New updates on your reports">{{ $responseNews }}</span>@endif</a>
                     <a href="{{ route('my-outage-reports.index') }}" @class(['is-active' => request()->routeIs('my-outage-reports.*')])>My Outage Reports</a>
                 @endif
             @endauth

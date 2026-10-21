@@ -26,4 +26,20 @@ class ResidentReportPolicy
     {
         return $report->user_id === $user->id;
     }
+
+    /**
+     * Following up an incident (status and documented resolution) is the residence manager's job.
+     */
+    public function followUp(User $user, ResidentReport $report): bool
+    {
+        return $user->isManager() && $report->residence->user_id === $user->id;
+    }
+
+    /**
+     * AI insights (similar incidents, previous resolutions) for a report: its author or its manager.
+     */
+    public function viewInsights(User $user, ResidentReport $report): bool
+    {
+        return $this->view($user, $report) || $this->followUp($user, $report);
+    }
 }

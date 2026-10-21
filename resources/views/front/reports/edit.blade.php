@@ -12,7 +12,7 @@
 
         <x-flash-messages />
 
-        <form action="{{ route('resident-reports.update', $report) }}" method="POST" class="form-card">
+        <form action="{{ route('resident-reports.update', $report) }}" method="POST" class="form-card" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             @include('partials.report-form')

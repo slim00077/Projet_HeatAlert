@@ -5,7 +5,8 @@
     <nav>
         <a href="{{ route('admin.dashboard') }}" @class(['is-active' => request()->routeIs('admin.dashboard')])><x-icon name="grid" /> Dashboard</a>
         <a href="{{ route('admin.users.index') }}" @class(['is-active' => request()->routeIs('admin.users.*')])><x-icon name="users" /> Users</a>
-        <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])><x-icon name="building" /> Residences</a>
+        <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.index', 'residences.show', 'residences.create', 'residences.edit')])><x-icon name="building" /> Residences</a>
+        <a href="{{ route('command-center.index') }}" @class(['is-active' => request()->routeIs('command-center.*', 'response-cases.*', 'residences.response-cases.*')])><x-icon name="activity" /> Command Center</a>
         <a href="{{ route('admin.approvals.index') }}" @class(['is-active' => request()->routeIs('admin.approvals.*')])>
             <x-icon name="check" /> Approvals
             @if (($pendingResidences = \App\Models\Residence::pending()->count()) > 0)
