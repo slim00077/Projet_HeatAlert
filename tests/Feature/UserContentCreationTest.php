@@ -32,7 +32,9 @@ test('a resident can add an advice with an image', function () {
         ->assertRedirect();
 
     $this->assertDatabaseHas('advice', ['title' => 'Drink water', 'is_approved' => false]);
-    $this->get(route('advice.index'))->assertDontSee('Drink water');
+    $this->get(route('advice.index'))
+        ->assertViewHas('advices', fn ($advices) => $advices->total() === 0)
+        ->assertSee('Drink water');
     Storage::disk('public')->assertExists(Advice::first()->image_path);
 });
 
