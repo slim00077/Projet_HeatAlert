@@ -8,7 +8,7 @@
 
 <x-flash-messages />
 
-<form action="{{ route('resident-reports.store') }}" method="POST" class="form-card">
+<form action="{{ route('resident-reports.store') }}" method="POST" class="form-card" enctype="multipart/form-data">
     @csrf
     @include('partials.report-form')
 </form>

@@ -4,91 +4,86 @@
 
 @section('content')
 
-<div class="page-header">
-    <div>
-        <h1>Residence Approvals</h1>
-        <p class="subtitle">Residences submitted by residence managers wait here until you approve them</p>
+<div class="mr ap">
+
+    <header class="mr-hero">
+        <div class="mr-hero-text">
+            <span class="intel-eyebrow"><x-icon name="check" /> Review queue</span>
+            <h1>Residence Approvals</h1>
+            <p>Residences submitted by residence managers wait here until you approve them. Approving lets the manager add residents; rejecting asks for a reason they will see.</p>
+        </div>
+        <ul class="mr-readout" aria-label="Approval summary">
+            <li class="is-orange"><b>{{ $pending->count() }}</b><span>waiting for a decision</span></li>
+            <li class="is-green"><b>{{ $approvedCount }}</b><span>approved</span></li>
+            <li class="is-coral"><b>{{ $rejectedCount }}</b><span>rejected</span></li>
+        </ul>
+    </header>
+
+    <x-flash-messages />
+
+    <h2 class="fx-heading"><x-icon name="clock" /> Waiting for your decision</h2>
+
+    <div class="rh-grid">
+        @forelse ($pending as $residence)
+            <article class="rh-card cc-tone-purple">
+                <a href="{{ route('residences.show', $residence) }}" class="rh-media" aria-label="Open {{ $residence->name }}">
+                    @if ($residence->hasVideo())
+                        <video src="{{ $residence->videoUrl() }}" muted playsinline preload="metadata"></video>
+                    @else
+                        <img src="{{ $residence->imageUrl() }}" alt="" loading="lazy">
+                    @endif
+                    <span class="rh-status is-live">Awaiting approval</span>
+                    <h3 class="rh-title">{{ $residence->name }}</h3>
+                </a>
+
+                <div class="rh-body">
+                    <div class="rh-meta">
+                        <span><x-icon name="pin" /> {{ $residence->address }}</span>
+                        <span><x-icon name="home" /> {{ $residence->neighborhood }}</span>
+                        <span><x-icon name="users" /> Submitted by {{ $residence->user->name }} · {{ $residence->created_at->diffForHumans() }}</span>
+                    </div>
+
+                    <p class="rh-desc">{{ \Illuminate\Support\Str::limit($residence->description ?? 'No description provided.', 110) }}</p>
+
+                    <div class="ap-decision">
+                        <form action="{{ route('admin.approvals.approve', $residence) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-primary btn-sm ap-approve"><x-icon name="check" /> Approve</button>
+                        </form>
+                        <form action="{{ route('admin.approvals.reject', $residence) }}" method="POST" class="ap-reject">
+                            @csrf
+                            <input type="text" name="rejection_reason" placeholder="Reason for rejection" required maxlength="500" aria-label="Reason for rejecting {{ $residence->name }}">
+                            <button type="submit" class="btn btn-outline btn-sm">Reject</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        @empty
+            <div class="empty-state rh-empty">Nothing to approve. All submitted residences were reviewed.</div>
+        @endforelse
     </div>
-</div>
 
-<x-flash-messages />
+    <h2 class="fx-heading"><x-icon name="activity" /> Recent decisions</h2>
 
-<div class="table-card">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Residence</th>
-                <th>Address</th>
-                <th>Neighborhood</th>
-                <th>Submitted by</th>
-                <th>Submitted</th>
-                <th>Decision</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($pending as $residence)
-                <tr>
-                    <td><a href="{{ route('residences.show', $residence) }}">{{ $residence->name }}</a></td>
-                    <td>{{ $residence->address }}</td>
-                    <td>{{ $residence->neighborhood }}</td>
-                    <td>{{ $residence->user->name }}</td>
-                    <td>{{ $residence->created_at->diffForHumans() }}</td>
-                    <td>
-                        <div class="toolbar">
-                            <form action="{{ route('admin.approvals.approve', $residence) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn btn-primary btn-sm">Approve</button>
-                            </form>
-                            <form action="{{ route('admin.approvals.reject', $residence) }}" method="POST" class="toolbar">
-                                @csrf
-                                <input type="text" name="rejection_reason" placeholder="Reason for rejection" required maxlength="500" class="inline-input">
-                                <button type="submit" class="btn btn-outline btn-sm">Reject</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="6">Nothing to approve. All submitted residences were reviewed.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-
-<div class="page-header" style="margin-top: 2rem">
-    <h2>Recent decisions</h2>
-</div>
-
-<div class="table-card">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Residence</th>
-                <th>Submitted by</th>
-                <th>Status</th>
-                <th>Reviewed by</th>
-                <th>When</th>
-                <th>Reason</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($reviewed as $residence)
-                <tr>
-                    <td><a href="{{ route('residences.show', $residence) }}">{{ $residence->name }}</a></td>
-                    <td>{{ $residence->user->name }}</td>
-                    <td><x-status-badge :status="ucfirst($residence->status)" /></td>
-                    <td>{{ $residence->reviewer?->name ?? '-' }}</td>
-                    <td>{{ $residence->reviewed_at->diffForHumans() }}</td>
-                    <td class="wrap">{{ $residence->rejection_reason ?? '-' }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="6">No decisions yet.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+    <ol class="ap-log">
+        @forelse ($reviewed as $residence)
+            <li class="cc-tone-{{ $residence->isApproved() ? 'green' : 'coral' }}">
+                <span class="ap-log-dot"><x-icon :name="$residence->isApproved() ? 'check' : 'warning'" /></span>
+                <div class="ap-log-main">
+                    <div class="ap-log-top">
+                        <a href="{{ route('residences.show', $residence) }}">{{ $residence->name }}</a>
+                        <x-status-badge :status="ucfirst($residence->status)" />
+                    </div>
+                    <small>Submitted by {{ $residence->user->name }} · reviewed by {{ $residence->reviewer?->name ?? 'an admin' }} {{ $residence->reviewed_at->diffForHumans() }}</small>
+                    @if ($residence->rejection_reason)
+                        <p>{{ $residence->rejection_reason }}</p>
+                    @endif
+                </div>
+            </li>
+        @empty
+            <li class="ap-log-empty">No decisions yet.</li>
+        @endforelse
+    </ol>
 </div>
 
 @endsection

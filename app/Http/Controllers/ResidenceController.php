@@ -21,7 +21,11 @@ class ResidenceController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         $residences = Residence::with('user')
-            ->withCount('residentReports')
+            ->withCount([
+                'residentReports',
+                'residentReports as open_reports_count' => fn ($query) => $query->unresolved(),
+                'responseCases as open_cases_count' => fn ($query) => $query->open(),
+            ])
             ->accessibleBy($user)
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
@@ -81,11 +85,20 @@ class ResidenceController extends Controller
     {
         Gate::authorize('view', $residence);
 
-        $residence->load(['user', 'residentReports', 'members', 'reviewer']);
+        $user = $request->user();
+
+        $residence->load(['user', 'residentReports.residence', 'residentReports.user', 'residentReports.responseCases', 'members', 'reviewer', 'responseCases.tasks', 'responseCases.reports']);
+
+        // Residents only see their own reports; the residence-wide picture belongs to the manager.
+        $reports = $residence->residentReports
+            ->when($user->isResident(), fn ($reports) => $reports->where('user_id', $user->id))
+            ->sortBy([fn ($a, $b) => $a->isResolved() <=> $b->isResolved(), fn ($a, $b) => $b->reported_at <=> $a->reported_at])
+            ->values();
 
         return view($this->folder($request).'.residences.show', [
             'residence' => $residence,
             'canManageMembers' => Gate::allows('manageMembers', $residence),
+            'reports' => $reports,
         ]);
     }
 

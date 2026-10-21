@@ -59,6 +59,11 @@ class Residence extends Model
         return $this->hasMany(ResidentReport::class);
     }
 
+    public function responseCases(): HasMany
+    {
+        return $this->hasMany(ResponseCase::class);
+    }
+
     public function scopeApproved(Builder $query): void
     {
         $query->where('status', self::STATUS_APPROVED);

@@ -14,6 +14,8 @@ class ResidenceApprovalController extends Controller
         return view('back.approvals.index', [
             'pending' => Residence::pending()->with('user')->oldest()->get(),
             'reviewed' => Residence::whereNotNull('reviewed_at')->with(['user', 'reviewer'])->latest('reviewed_at')->limit(10)->get(),
+            'approvedCount' => Residence::approved()->count(),
+            'rejectedCount' => Residence::where('status', Residence::STATUS_REJECTED)->count(),
         ]);
     }
 
