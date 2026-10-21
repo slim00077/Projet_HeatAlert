@@ -42,6 +42,13 @@
     @error('content')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 
+<div class="form-group @error('source_url') has-error @enderror">
+    <label for="source_url">Reference source URL <span class="field-hint">(optional, http/https)</span></label>
+    <input type="url" id="source_url" name="source_url" value="{{ old('source_url', $advice->source_url ?? '') }}" maxlength="2048" placeholder="https://www.who.int/...">
+    <p class="field-hint">A URL is recorded for administrator review. HeatAlert does not independently verify its authority or medical claims.</p>
+    @error('source_url')<p class="field-error">{{ $message }}</p>@enderror
+</div>
+
 <div class="form-group @error('image') has-error @enderror">
     <label for="image">Image <span class="field-hint">(optional)</span></label>
     <input type="file" id="image" name="image" accept="image/*">

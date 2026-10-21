@@ -6,7 +6,9 @@ use App\Enums\Severity;
 use App\Models\Advice;
 use App\Models\AdviceCategory;
 use App\Models\AdviceMessage;
+use App\Notifications\AdviceModerationUpdated;
 use App\Services\AdviceAssistantService;
+use App\Services\AdviceQualityAnalyzer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -98,8 +100,21 @@ class AdviceCatalogController extends Controller
             $isAiAvailable = $assistant->isAvailable();
         }
 
+        $mySubmissions = $request->user()?->adviceSubmissions()
+            ->with(['category:id,name', 'moderationEvents' => fn ($query) => $query->whereIn('action', ['approved', 'rejected', 'changes_requested'])->latest('id')->limit(1)])
+            ->latest('created_at')
+            ->limit(10)
+            ->get() ?? collect();
+
+        if ($request->user() !== null) {
+            $request->user()->unreadNotifications()
+                ->where('type', AdviceModerationUpdated::class)
+                ->update(['read_at' => now()]);
+        }
+
         return view('front.advice.index', [
             'advices' => $advices,
+            'mySubmissions' => $mySubmissions,
             'categories' => $categories,
             'search' => $search,
             'filters' => $filters,
@@ -136,7 +151,7 @@ class AdviceCatalogController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdviceQualityAnalyzer $qualityAnalyzer): RedirectResponse
     {
         $validated = $request->validate([
             'advice_category_id' => ['required', 'integer', 'exists:advice_categories,id'],
@@ -144,6 +159,7 @@ class AdviceCatalogController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'summary' => ['nullable', 'string', 'max:500'],
             'content' => ['required', 'string'],
+            'source_url' => ['nullable', 'url:http,https', 'max:2048'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
         ]);
 
@@ -153,8 +169,17 @@ class AdviceCatalogController extends Controller
             $data['image_path'] = $request->file('image')->store('advice', 'public');
         }
 
-        Advice::create($data);
+        $advice = Advice::create($data + [
+            'submitted_by' => $request->user()->getKey(),
+            'is_approved' => false,
+            'moderation_status' => 'pending',
+        ]);
+        $report = $qualityAnalyzer->analyze($advice->load('category'), $request->user());
 
-        return redirect()->route('advice.index')->with('success', 'Thank you. Your advice was submitted for administrator review.');
+        $message = $report->analysis_status === 'completed'
+            ? 'Thank you. Your advice and AI quality report were submitted for administrator review.'
+            : 'Thank you. Your advice was submitted for manual administrator review because AI analysis was unavailable.';
+
+        return redirect()->route('advice.index')->with('success', $message);
     }
 }

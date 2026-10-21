@@ -79,6 +79,7 @@ it('lets only logged-in users ask the advisor and validates the question', funct
         'title' => 'Pending advice should not be shared',
         'risk_level' => Severity::High,
         'is_approved' => false,
+        'moderation_status' => 'pending',
     ]);
     Advice::factory()->for($category, 'category')->create([
         'title' => 'Advice for low risk only',
@@ -105,6 +106,7 @@ it('does not ask AI to answer when no approved advice matches the current risk',
         'title' => 'Pending high-risk advice',
         'risk_level' => Severity::High,
         'is_approved' => false,
+        'moderation_status' => 'pending',
     ]);
 
     $this->actingAs(User::factory()->create())

@@ -14,6 +14,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(
+            GeminiTextGenerator::class,
+            fn () => new GeminiTextGenerator(config('services.gemini.key'), config('services.gemini.model')),
+        );
+
         $this->app->singleton(AiTextGenerator::class, fn () => match (config('services.ai.provider')) {
             'gemini' => new GeminiTextGenerator(config('services.gemini.key'), config('services.gemini.model')),
             default => new AnthropicTextGenerator(config('services.anthropic.key'), config('services.anthropic.model')),

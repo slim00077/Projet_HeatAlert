@@ -26,6 +26,7 @@ class AdviceFactory extends Factory
             'content' => fake()->paragraphs(3, true),
             'risk_level' => Severity::Medium,
             'is_approved' => true,
+            'moderation_status' => 'approved',
         ];
     }
 }

@@ -134,4 +134,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(AdviceConversation::class);
     }
+
+    public function adviceSubmissions(): HasMany
+    {
+        return $this->hasMany(Advice::class, 'submitted_by');
+    }
 }
