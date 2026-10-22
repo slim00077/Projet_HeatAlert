@@ -35,8 +35,9 @@ class FrontHeatAlertController extends Controller
     }
 
     /**
-     * Residents and managers submit community reports (a pin on the map, no banner, no notification);
-     * an admin creating one here gets a regular alert that notifies the neighborhood.
+     * Residents and managers submit community reports that wait for an admin's approval
+     * (no banner, no notification); an admin creating one here gets a regular alert that
+     * notifies the neighborhood.
      */
     public function store(HeatAlertRequest $request): RedirectResponse
     {
@@ -44,6 +45,7 @@ class FrontHeatAlertController extends Controller
 
         $data = collect($request->validated())->except('image')->all();
         $data['source'] = $user->isAdmin() ? HeatAlert::SOURCE_MANUAL : HeatAlert::SOURCE_COMMUNITY;
+        $data['review_status'] = $user->isAdmin() ? HeatAlert::REVIEW_APPROVED : HeatAlert::REVIEW_PENDING;
         $data['created_by'] = $user->id;
 
         if ($request->hasFile('image')) {
@@ -56,6 +58,8 @@ class FrontHeatAlertController extends Controller
             $heatAlert->load('neighborhood')->notifyResidents();
         }
 
-        return redirect()->route('front.alerts.index')->with('success', 'Heat alert created successfully.');
+        return redirect()->route('front.alerts.index')->with('success', $user->isAdmin()
+            ? 'Heat alert created successfully.'
+            : 'Report sent. It will appear on the map once an admin approves it.');
     }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontHeatAlertController;
 use App\Http\Controllers\HeatAdvisorController;
 use App\Http\Controllers\HeatAlertController;
+use App\Http\Controllers\HeatAlertReviewController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IncidentLensController;
 use App\Http\Controllers\MapAlertController;
@@ -121,6 +122,8 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::resource('neighborhoods', NeighborhoodController::class)
             ->names('admin.neighborhoods');
 
+        Route::post('/alerts/{heatAlert}/approve', [HeatAlertReviewController::class, 'approve'])->name('admin.alerts.approve');
+        Route::post('/alerts/{heatAlert}/reject', [HeatAlertReviewController::class, 'reject'])->name('admin.alerts.reject');
         Route::resource('alerts', HeatAlertController::class)
             ->parameters(['alerts' => 'heatAlert'])
             ->names('admin.alerts');

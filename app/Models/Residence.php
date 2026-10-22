@@ -137,7 +137,8 @@ class Residence extends Model
      */
     public function hasHeatAlert(): bool
     {
-        return HeatAlert::whereRaw('LOWER(residence_name) = ?', [mb_strtolower(trim($this->name))])
+        return HeatAlert::approved()
+            ->whereRaw('LOWER(residence_name) = ?', [mb_strtolower(trim($this->name))])
             ->where('start_date', '<=', now())
             ->where(fn ($query) => $query->whereNull('end_date')->orWhere('end_date', '>=', now()))
             ->exists();

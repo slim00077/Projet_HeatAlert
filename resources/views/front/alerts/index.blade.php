@@ -25,12 +25,6 @@
 
         <x-flash-messages />
 
-        @auth
-            <p>
-                <a href="{{ auth()->user()->isAdmin() ? route('admin.alerts.create') : route('front.alerts.create') }}" class="btn btn-outline"><x-icon name="plus" /> Add an alert</a>
-            </p>
-        @endauth
-
         @include('partials.neighborhood-map', ['selectedId' => $neighborhoodId])
 
         <div class="alert-grid">

@@ -25,6 +25,7 @@ class HeatAlertController extends Controller
         ]);
 
         $alerts = HeatAlert::query()
+            ->approved()
             ->with('neighborhood')
             ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where('title', 'like', "%{$search}%"))
             ->when($filters['neighborhood_id'] ?? null, fn ($query, $id) => $query->where('neighborhood_id', $id))
@@ -42,6 +43,7 @@ class HeatAlertController extends Controller
 
         return view('admin.alerts.index', [
             'alerts' => $alerts,
+            'pendingReports' => HeatAlert::pendingReview()->with(['neighborhood', 'creator'])->latest()->get(),
             'neighborhoods' => Neighborhood::orderBy('name')->get(),
             'filters' => $filters,
         ]);

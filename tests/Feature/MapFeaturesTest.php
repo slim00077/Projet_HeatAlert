@@ -137,7 +137,7 @@ it('lets an admin create an official alert from the map that notifies residents 
 
 it('renders the map controls on the public and admin alert pages', function () {
     $this->get(route('front.alerts.index'))->assertOk()->assertSee('Report a heat spot')->assertSee(route('map.data'), false);
-    $this->actingAs($this->admin)->get(route('admin.alerts.index'))->assertOk()->assertSee('Report a heat spot');
+    $this->actingAs($this->admin)->get(route('admin.alerts.index'))->assertOk()->assertSee(route('map.data'), false)->assertDontSee('id="map-report-toggle"', false);
 });
 
 it('finds the nearest neighborhood within range only', function () {

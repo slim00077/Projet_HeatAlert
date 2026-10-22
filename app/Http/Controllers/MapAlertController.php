@@ -14,7 +14,8 @@ class MapAlertController extends Controller
 {
     /**
      * Create an alert from a point picked on the map. Admins create regular alerts
-     * (residents get notified); residents create community reports (shown as pins only).
+     * (residents get notified); residents and managers send a community report that stays
+     * hidden until an admin approves it.
      */
     public function store(Request $request): JsonResponse
     {
@@ -49,6 +50,7 @@ class MapAlertController extends Controller
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
             'source' => $user->isAdmin() ? HeatAlert::SOURCE_MANUAL : HeatAlert::SOURCE_COMMUNITY,
+            'review_status' => $user->isAdmin() ? HeatAlert::REVIEW_APPROVED : HeatAlert::REVIEW_PENDING,
             'created_by' => $user->id,
             'start_date' => now(),
             'end_date' => now()->addHours((int) $data['duration_hours']),
@@ -57,7 +59,9 @@ class MapAlertController extends Controller
         $alert->setRelation('neighborhood', $neighborhood)->notifyResidents();
 
         return response()->json([
-            'message' => "Alert added in {$neighborhood->name}.",
+            'message' => $user->isAdmin()
+                ? "Alert added in {$neighborhood->name}."
+                : "Report sent for {$neighborhood->name}. It will appear on the map once an admin approves it.",
             'alert' => HeatAlertResource::make($alert)->resolve($request),
         ], 201);
     }
