@@ -4,7 +4,7 @@
 
 @section('content')
 
-<section class="page-section">
+<section class="fx-page page-section">
     <div class="container">
 
         <div class="page-title">
@@ -56,6 +56,14 @@
                                 <li>{{ $tip }}</li>
                             @endforeach
                         </ul>
+                        @if (($adviceByRisk->get($alert->severity_level->value) ?? collect())->isNotEmpty())
+                            <h3 class="risk-advice-heading">More advice for {{ $alert->severity_level->label() }} risk</h3>
+                            <ul class="tips-list">
+                                @foreach ($adviceByRisk->get($alert->severity_level->value) as $advice)
+                                    <li><a href="{{ route('advice.show', $advice) }}">{{ $advice->title }}</a> <span class="meta">({{ $advice->category->name }})</span></li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </details>
                 </article>
             @empty

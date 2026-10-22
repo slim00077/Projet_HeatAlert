@@ -33,11 +33,11 @@
             @unless (auth()->user()?->isManager())
                 <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
             @endunless
-            <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*')])>Advice</a>
+            <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*', 'assistant.index')])>Advice</a>
+            <a href="{{ route('quizzes.index') }}" @class(['is-active' => request()->routeIs('quizzes.*')])>Challenge</a>
             @guest
                 <a href="{{ route('pages.about') }}" @class(['is-active' => request()->routeIs('pages.about')])>About</a>
             @endguest
-
         </nav>
 
         <div class="nav-actions">

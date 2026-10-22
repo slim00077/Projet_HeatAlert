@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\HeatAlertRequest;
+use App\Models\Advice;
 use App\Models\HeatAlert;
 use App\Models\Neighborhood;
 use Illuminate\Http\RedirectResponse;
@@ -21,9 +22,20 @@ class FrontHeatAlertController extends Controller
             ->when($neighborhoodId, fn ($query, int $id) => $query->where('neighborhood_id', $id))
             ->orderBy('start_date')
             ->get();
+        $riskLevels = $alerts->pluck('severity_level')
+            ->map(fn ($severity) => $severity->value)
+            ->unique()
+            ->all();
+        $adviceByRisk = Advice::approved()
+            ->with('category')
+            ->whereIn('risk_level', $riskLevels)
+            ->orderBy('title')
+            ->get()
+            ->groupBy(fn (Advice $advice) => $advice->risk_level->value);
 
         return view('front.alerts.index', [
             'alerts' => $alerts,
+            'adviceByRisk' => $adviceByRisk,
             'neighborhoods' => Neighborhood::orderBy('name')->get(),
             'neighborhoodId' => $neighborhoodId,
         ]);

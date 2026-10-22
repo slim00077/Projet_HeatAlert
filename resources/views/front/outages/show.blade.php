@@ -3,7 +3,7 @@
 @section('title', $powerOutage->title . ' - HeatAlert')
 
 @section('content')
-    <section class="page-shell">
+    <section class="fx-page page-shell">
         <div class="container">
             <x-flash-messages />
         </div>
