@@ -48,10 +48,7 @@ return [
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
-        // Tried in order when the main model is overloaded (503/429), unavailable (404) or unreachable. Comma separated.
-        // Semantic vectors for the Incident Constellation (reports are linked by cosine similarity).
         'embedding_model' => env('GEMINI_EMBEDDING_MODEL', 'gemini-embedding-001'),
-        // Cosine similarity above which two reports are linked (about the top 4% of pairs on the demo data).
         'similarity_threshold' => (float) env('GEMINI_SIMILARITY_THRESHOLD', 0.895),
         'fallback_models' => array_values(array_filter(array_map('trim', explode(',', (string) env('GEMINI_FALLBACK_MODELS', 'gemini-flash-lite-latest'))))),
     ],

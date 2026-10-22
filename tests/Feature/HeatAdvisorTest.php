@@ -2,6 +2,8 @@
 
 use App\Contracts\AiTextGenerator;
 use App\Enums\Severity;
+use App\Models\Advice;
+use App\Models\AdviceCategory;
 use App\Models\HeatAlert;
 use App\Models\Neighborhood;
 use App\Models\User;
@@ -66,7 +68,23 @@ it('falls back to rule-based advice when the AI is unavailable', function () {
 });
 
 it('lets only logged-in users ask the advisor and validates the question', function () {
-    fakeAi('Check on your neighbours.');
+    $fake = fakeAi('Check on your neighbours.');
+    $category = AdviceCategory::factory()->create(['name' => 'Health and wellbeing']);
+    Advice::factory()->for($category, 'category')->create([
+        'title' => 'Check on older neighbours',
+        'summary' => 'Visit or contact older neighbours twice a day.',
+        'risk_level' => Severity::High,
+    ]);
+    Advice::factory()->for($category, 'category')->create([
+        'title' => 'Pending advice should not be shared',
+        'risk_level' => Severity::High,
+        'is_approved' => false,
+        'moderation_status' => 'pending',
+    ]);
+    Advice::factory()->for($category, 'category')->create([
+        'title' => 'Advice for low risk only',
+        'risk_level' => Severity::Low,
+    ]);
 
     $this->postJson(route('advisor.ask', $this->zone), ['question' => 'What should I do today?'])->assertUnauthorized();
 
@@ -75,6 +93,45 @@ it('lets only logged-in users ask the advisor and validates the question', funct
     $this->actingAs($user)->postJson(route('advisor.ask', $this->zone), ['question' => 'What should I do today?'])
         ->assertOk()
         ->assertJson(['text' => 'Check on your neighbours.', 'source' => 'ai']);
+    expect($fake->prompts[0])
+        ->toContain('Check on older neighbours')
+        ->not->toContain('Pending advice should not be shared')
+        ->not->toContain('Advice for low risk only');
+});
+
+it('does not ask AI to answer when no approved advice matches the current risk', function () {
+    $fake = fakeAi('This answer must not be used.');
+    $category = AdviceCategory::factory()->create();
+    Advice::factory()->for($category, 'category')->create([
+        'title' => 'Pending high-risk advice',
+        'risk_level' => Severity::High,
+        'is_approved' => false,
+        'moderation_status' => 'pending',
+    ]);
+
+    $this->actingAs(User::factory()->create())
+        ->postJson(route('advisor.ask', $this->zone), ['question' => 'How do I help my grandfather?'])
+        ->assertOk()
+        ->assertJsonPath('source', 'rules')
+        ->assertJsonPath('text', fn (string $text) => str_contains($text, 'no administrator-approved advice'));
+
+    expect($fake->prompts)->toBeEmpty();
+});
+
+it('returns approved matching advice when the AI service is unavailable', function () {
+    fakeAi(null);
+    $category = AdviceCategory::factory()->create(['name' => 'Health and wellbeing']);
+    Advice::factory()->for($category, 'category')->create([
+        'title' => 'Keep older neighbours safe',
+        'summary' => 'Check on older neighbours twice a day.',
+        'risk_level' => Severity::High,
+    ]);
+
+    $this->actingAs(User::factory()->create())
+        ->postJson(route('advisor.ask', $this->zone), ['question' => 'How can I help an older neighbour?'])
+        ->assertOk()
+        ->assertJsonPath('source', 'advice')
+        ->assertJsonPath('text', 'Keep older neighbours safe: Check on older neighbours twice a day.');
 });
 
 it('drafts an alert for admins only, with the AI or with a template', function () {

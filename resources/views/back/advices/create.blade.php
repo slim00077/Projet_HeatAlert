@@ -5,6 +5,7 @@
 @section('content')
 
 <h1>Add Advice</h1>
+<p class="subtitle">New advice is saved as pending. Review its quality report before you decide whether to publish it.</p>
 
 <x-flash-messages />
 

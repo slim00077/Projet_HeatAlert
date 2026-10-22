@@ -11,6 +11,19 @@
     @error('advice_category_id')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 
+<div class="form-group @error('risk_level') has-error @enderror">
+    <label for="risk_level">Heat risk level</label>
+    <select id="risk_level" name="risk_level" required>
+        <option value="">-- Select a risk level --</option>
+        @foreach ($riskLevels as $riskLevel)
+            <option value="{{ $riskLevel->value }}" @selected(old('risk_level', isset($advice) ? $advice->risk_level->value : '') === $riskLevel->value)>
+                {{ $riskLevel->label() }}
+            </option>
+        @endforeach
+    </select>
+    @error('risk_level')<p class="field-error">{{ $message }}</p>@enderror
+</div>
+
 <div class="form-group @error('title') has-error @enderror">
     <label for="title">Title</label>
     <input type="text" id="title" name="title" value="{{ old('title', $advice->title ?? '') }}" maxlength="255" required>
@@ -27,6 +40,13 @@
     <label for="content">Advice</label>
     <textarea id="content" name="content" rows="8" required>{{ old('content', $advice->content ?? '') }}</textarea>
     @error('content')<p class="field-error">{{ $message }}</p>@enderror
+</div>
+
+<div class="form-group @error('source_url') has-error @enderror">
+    <label for="source_url">Reference source URL <span class="field-hint">(optional, http/https)</span></label>
+    <input type="url" id="source_url" name="source_url" value="{{ old('source_url', $advice->source_url ?? '') }}" maxlength="2048" placeholder="https://www.who.int/...">
+    <p class="field-hint">A URL is recorded for administrator review. HeatAlert does not independently verify its authority or medical claims.</p>
+    @error('source_url')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 
 <div class="form-group @error('image') has-error @enderror">

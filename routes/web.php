@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\CoolSpotTypeController as AdminCoolSpotTypeContro
 use App\Http\Controllers\AdminAdviceCategoryController;
 use App\Http\Controllers\AdminAdviceController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdviceAssistantController;
 use App\Http\Controllers\AdviceCatalogController;
+use App\Http\Controllers\AdviceSubmissionController;
 use App\Http\Controllers\CommandCenterController;
 use App\Http\Controllers\ConstellationController;
 use App\Http\Controllers\CoolSpotController;
@@ -24,6 +26,7 @@ use App\Http\Controllers\OutageReportController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PowerOutageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QuizChallengeController;
 use App\Http\Controllers\ReportFollowUpController;
 use App\Http\Controllers\ReportPhotoController;
 use App\Http\Controllers\ResidenceApprovalController;
@@ -48,6 +51,9 @@ Route::get('/outages/{powerOutage}', [PowerOutageController::class, 'publicShow'
 // Login, registration, logout, password reset, email verification and 2FA routes come from Fortify.
 
 Route::middleware('auth')->group(function () {
+    Route::get('/my-advice-submissions', [AdviceSubmissionController::class, 'index'])
+        ->name('advice.submissions.index');
+
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->middleware('password.confirm')
         ->name('profile.edit');
@@ -57,6 +63,18 @@ Route::middleware('auth')->group(function () {
 });
 
 // Authenticated front office: outages, advice, cool spots and heat alerts submitted by users.
+Route::middleware('auth')->group(function () {
+    Route::get('/advice-assistant', [AdviceAssistantController::class, 'index'])
+        ->name('assistant.index');
+    Route::post('/advice/conversations', [AdviceAssistantController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('assistant.conversations.store');
+    Route::post('/advice/conversations/{conversation}/messages', [AdviceAssistantController::class, 'send'])
+        ->middleware('throttle:10,1')
+        ->whereNumber('conversation')
+        ->name('assistant.messages.store');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/outages/{powerOutage}/reports', [OutageReportController::class, 'publicStore'])
         ->name('front.power-outages.reports.store');
@@ -86,12 +104,34 @@ Route::post('/cool-spots/recommend', [CoolSpotController::class, 'recommend'])
     ->name('cool-spots.recommend');
 Route::get('/cool-spots/{coolSpot}', [CoolSpotController::class, 'show'])->name('cool-spots.show');
 
+Route::get('/quizzes', [QuizChallengeController::class, 'index'])->name('quizzes.index');
+Route::get('/quizzes/history', [QuizChallengeController::class, 'history'])
+    ->middleware(['auth', 'verified'])
+    ->name('quizzes.history');
+Route::get('/quizzes/{quiz}', [QuizChallengeController::class, 'show'])->name('quizzes.show');
+Route::post('/quizzes/{quiz}/start', [QuizChallengeController::class, 'start'])
+    ->middleware('throttle:20,1')
+    ->name('quizzes.start');
+Route::get('/quizzes/{quiz}/play/{run}', [QuizChallengeController::class, 'play'])->name('quizzes.play');
+Route::post('/quizzes/{quiz}/play/{run}/answer', [QuizChallengeController::class, 'answer'])
+    ->middleware('throttle:60,1')
+    ->name('quizzes.answer');
+Route::post('/quizzes/{quiz}/play/{run}/next', [QuizChallengeController::class, 'next'])
+    ->middleware('throttle:60,1')
+    ->name('quizzes.next');
+Route::get('/quizzes/{quiz}/results/{run}', [QuizChallengeController::class, 'result'])->name('quizzes.results');
+Route::post('/quizzes/{quiz}/results/{run}/review', [QuizChallengeController::class, 'review'])
+    ->middleware('throttle:20,1')
+    ->name('quizzes.review');
+
 // Admin
 Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')
     ->group(function () {
         Route::get('/', DashboardController::class)
             ->name('admin.dashboard');
+        Route::get('/quiz-statistics', [QuizChallengeController::class, 'statistics'])
+            ->name('admin.quizzes.statistics');
 
         Route::resource('users', AdminUserController::class)
             ->except('show')
@@ -109,6 +149,15 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         Route::resource('advices', AdminAdviceController::class)
             ->names('admin.advices');
+        Route::patch('/advices/{advice}/approve', [AdminAdviceController::class, 'approve'])
+            ->name('admin.advices.approve');
+        Route::post('/advices/{advice}/reject', [AdminAdviceController::class, 'reject'])
+            ->name('admin.advices.reject');
+        Route::post('/advices/{advice}/request-changes', [AdminAdviceController::class, 'requestChanges'])
+            ->name('admin.advices.request-changes');
+        Route::post('/advices/{advice}/reanalyze', [AdminAdviceController::class, 'reanalyze'])
+            ->middleware('throttle:10,1')
+            ->name('admin.advices.reanalyze');
 
         Route::resource('advice-categories', AdminAdviceCategoryController::class)
             ->names('admin.advice-categories');
