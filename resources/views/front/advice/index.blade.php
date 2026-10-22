@@ -4,7 +4,7 @@
 
 @section('content')
 
-<section class="page-section advice-page">
+<section class="fx-page page-section advice-page">
     <div class="container">
         <div class="page-title advice-page-heading">
             <div>

@@ -1894,6 +1894,8 @@ img, svg { max-width: 100%; }
 .qr-code svg { width: 100%; height: 100%; }
 .recovery-codes ul { list-style: none; padding: 0.8rem; margin: 0 0 1rem; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-md); display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.3rem; }
 .profile-photo input[type=file] { max-width: 220px; font-size: 0.8rem; }
+
+/* ==========================================================================
    Home page sections
    ========================================================================== */
 
@@ -1975,6 +1977,7 @@ img, svg { max-width: 100%; }
     --shadow-card: 0 12px 32px -14px rgba(0, 0, 0, 0.7);
 }
 
+:root[data-theme='dark'] .site-header:not(.is-overlay) { background: rgba(11, 18, 32, 0.95); }
 :root[data-theme='dark'] .icon-action.is-danger { background: #3b1f26; border-color: #5b2a33; }
 :root[data-theme='dark'] .btn-outline:hover { border-color: #475569; }
 :root[data-theme='dark'] .soft-blue,
@@ -3384,3 +3387,102 @@ button.cc-step-dot:not(:disabled):hover { transform: scale(1.1); border-color: v
 :is(.db-rows, .db-feed) .soft-orange { background: rgba(245, 158, 11, 0.2); color: #fde68a; }
 :is(.db-rows, .db-feed) .soft-blue { background: rgba(59, 130, 246, 0.22); color: #bfdbfe; }
 :is(.db-rows, .db-feed) .soft-green { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; }
+
+/* ==========================================================================
+   Futuristic pages (resident / manager facing pages)
+   Scoped to .fx-page: the global light/dark theme variables are untouched.
+   ========================================================================== */
+
+.fx-page .container > :is(.page-title, .page-header, .section-heading:not(.small)):first-child {
+    position: relative;
+    isolation: isolate;
+    display: block;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    padding: 1.8rem 2.2rem;
+    border-radius: var(--radius-lg);
+    color: #fff;
+    background:
+        radial-gradient(circle at 88% 12%, rgba(255, 107, 107, 0.38), transparent 42%),
+        radial-gradient(circle at 8% 120%, rgba(59, 130, 246, 0.3), transparent 42%),
+        linear-gradient(135deg, var(--navy), var(--navy-deep) 62%, #3b1d2a);
+    box-shadow: var(--shadow-card);
+}
+.fx-page .container > :is(.page-title, .page-header):first-child {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.fx-page .container > :is(.page-title, .page-header, .section-heading):first-child::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: linear-gradient(180deg, #000, transparent 85%);
+    pointer-events: none;
+}
+.fx-page .container > :is(.page-title, .page-header, .section-heading):first-child::after {
+    content: "";
+    position: absolute;
+    right: -7rem;
+    top: -7rem;
+    z-index: -1;
+    width: 20rem;
+    height: 20rem;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(255, 107, 107, 0) 0deg, rgba(255, 107, 107, 0.3) 60deg, rgba(255, 107, 107, 0) 70deg);
+    animation: mr-sweep 7s linear infinite;
+    pointer-events: none;
+}
+.fx-page .container > :is(.page-title, .page-header, .section-heading):first-child :is(h1, h2) { margin-top: 0.3rem; color: #fff; letter-spacing: -0.02em; }
+.fx-page .container > :is(.page-title, .page-header, .section-heading):first-child p { max-width: 42rem; color: rgba(255, 255, 255, 0.82); }
+.fx-page .container > :is(.page-title, .page-header, .section-heading):first-child :is(span:not(.chip), .home-eyebrow, .eyebrow) { color: var(--orange); }
+.fx-page .container > :is(.page-title, .page-header, .section-heading):first-child .btn-outline { background: transparent; color: #e2e8f0; border-color: rgba(255, 255, 255, 0.28); }
+.fx-page .container > :is(.page-title, .page-header, .section-heading):first-child .btn-outline:hover { border-color: var(--coral); color: #fff; }
+.fx-page .container > :is(.page-title, .page-header, .section-heading):first-child .chip { background: rgba(255, 255, 255, 0.12); color: #e2e8f0; }
+
+/* Cards and panels: dark glass with an accent line. Variables are redefined locally so nested content adapts. */
+.fx-page :is(.form-card, .panel, .profile-card, .advice-card, .residence-card, .report-card, .quiz-progress-card, .quiz-insight, .quiz-history-section, .info-card, .details-card, .panel-form, .table-card, .submission-feedback) {
+    --ink: #e2e8f0;
+    --muted: #94a3b8;
+    --border: rgba(255, 255, 255, 0.14);
+    --surface: #131b2c;
+    --surface-alt: rgba(255, 255, 255, 0.05);
+    --card: #131b2c;
+    --coral-soft: rgba(255, 107, 107, 0.16);
+    --orange-soft: rgba(245, 158, 11, 0.16);
+    --blue-soft: rgba(59, 130, 246, 0.18);
+    --green-soft: rgba(16, 185, 129, 0.16);
+    --purple-soft: rgba(139, 92, 246, 0.18);
+    color-scheme: dark;
+    position: relative;
+    color: var(--ink);
+    background: linear-gradient(155deg, #1c2740 0%, #131b2c 100%);
+    border: 1px solid #263349;
+    box-shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+.fx-page :is(.form-card, .panel, .profile-card, .advice-card, .residence-card, .report-card, .quiz-progress-card, .quiz-insight, .quiz-history-section, .info-card, .details-card, .panel-form)::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, transparent, var(--coral), transparent);
+    pointer-events: none;
+}
+.fx-page :is(.advice-card, .residence-card, .report-card, .info-card):hover { border-color: rgba(255, 107, 107, 0.55); box-shadow: 0 18px 40px -16px rgba(255, 107, 107, 0.4); }
+.fx-page :is(.form-card, .panel, .profile-card, .advice-card, .residence-card, .report-card, .quiz-progress-card, .quiz-insight, .quiz-history-section, .info-card, .details-card, .panel-form, .table-card) :is(h1, h2, h3, h4, strong, label) { color: #fff; }
+.fx-page :is(.form-card, .panel, .profile-card, .panel-form) :is(input, select, textarea):not([type="checkbox"], [type="radio"], [type="range"]) {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+.fx-page :is(.form-card, .panel, .profile-card, .panel-form) :is(input, select, textarea):focus { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.25); outline: 0; }
+.fx-page :is(.form-card, .panel, .profile-card, .panel-form) ::placeholder { color: #64748b; }
+.fx-page :is(.form-card, .panel, .profile-card, .advice-card, .residence-card, .report-card, .quiz-progress-card, .quiz-insight, .quiz-history-section, .info-card, .details-card) .btn-outline { background: transparent; color: #e2e8f0; border-color: rgba(255, 255, 255, 0.28); }
+.fx-page :is(.form-card, .panel, .profile-card, .advice-card, .residence-card, .report-card, .quiz-progress-card, .quiz-insight, .quiz-history-section, .info-card, .details-card) .btn-outline:hover { border-color: var(--coral); color: #fff; }
+.fx-page .empty-state { color: #cbd5e1; background: rgba(255, 255, 255, 0.04); border: 1px dashed rgba(255, 255, 255, 0.22); border-radius: var(--radius-lg); }

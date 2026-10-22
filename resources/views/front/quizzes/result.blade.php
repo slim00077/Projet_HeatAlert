@@ -3,7 +3,7 @@
 @section('title', 'HeatAlert - Quiz results')
 
 @section('content')
-<section class="page-section">
+<section class="fx-page page-section">
     <div class="container">
         <x-flash-messages />
         <header class="quiz-result-header">

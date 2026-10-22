@@ -17,7 +17,7 @@
     $twoFactorActive = $user->two_factor_secret !== null && $user->two_factor_confirmed_at !== null;
 @endphp
 
-<section class="page-section">
+<section class="fx-page page-section">
     <div class="container profile-page">
 
         <div class="section-heading">
