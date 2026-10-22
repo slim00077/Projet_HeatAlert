@@ -42,6 +42,12 @@ if [ "$1" = "php-fpm" ]; then
         run "php artisan db:seed-if-empty"
     fi
 
+    # Deployed demo: refresh the demo data on every start so the site is always ready to test.
+    # A failure here must not keep the site down.
+    if [ "${RUN_DEMO_SEED:-false}" = "true" ]; then
+        run "php artisan db:seed --class=DeployDemoSeeder --force" || echo "Demo seeding failed: the site starts without refreshed demo data."
+    fi
+
     touch /tmp/ready
     exec "$@"
 fi

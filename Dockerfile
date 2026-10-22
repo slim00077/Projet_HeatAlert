@@ -49,6 +49,6 @@ RUN apk add --no-cache nginx supervisor
 COPY docker/render/nginx.conf docker/render/supervisord.conf /etc/heatalert/
 COPY docker/render/start.sh /usr/local/bin/render-start.sh
 RUN chmod +x /usr/local/bin/render-start.sh && rm -f /etc/nginx/http.d/default.conf
-ENV RUN_MIGRATIONS=true RUN_SEEDER=true
+ENV RUN_MIGRATIONS=true RUN_SEEDER=true RUN_DEMO_SEED=true
 ENTRYPOINT []
 CMD ["render-start.sh"]
