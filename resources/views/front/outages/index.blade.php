@@ -3,7 +3,7 @@
 @section('title', ($history ? 'Outage history' : 'Power Outages') . ' - HeatAlert')
 
 @section('content')
-    <section class="page-shell">
+    <section class="fx-page page-shell">
         <div class="container">
             <div class="section-heading">
                 <span>Power outages</span>

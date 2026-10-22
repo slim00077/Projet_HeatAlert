@@ -4,7 +4,7 @@
 
 @section('content')
 
-<section class="page-section">
+<section class="fx-page page-section">
     <div class="container">
         <article class="advice-detail">
             <a href="{{ route('advice.index', ['category' => $advice->advice_category_id]) }}" class="chip">{{ $advice->category->name }}</a>

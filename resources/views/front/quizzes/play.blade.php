@@ -3,7 +3,7 @@
 @section('title', 'HeatAlert - ' . $quiz->title)
 
 @section('content')
-<section class="page-section">
+<section class="fx-page page-section">
     <div class="container quiz-play-wrap">
         <div class="quiz-play-heading">
             <a href="{{ route('quizzes.show', $quiz) }}" class="card-link">Exit quiz</a>
