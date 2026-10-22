@@ -15,22 +15,29 @@
 
             @auth
                 @if (auth()->user()->isManager())
-                    <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])>Managed Residences</a>
+                    <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.index', 'residences.show', 'residences.create', 'residences.edit')])>Managed Residences</a>
+                    <a href="{{ route('command-center.index') }}" @class(['is-active' => request()->routeIs('command-center.*', 'response-cases.*', 'residences.response-cases.*')])>Command Center</a>
                     <a href="{{ route('my-outage-reports.index') }}" @class(['is-active' => request()->routeIs('my-outage-reports.*')])>My Outage Reports</a>
                 @elseif (auth()->user()->isResident())
                     <a href="{{ route('residences.index') }}" @class(['is-active' => request()->routeIs('residences.*')])>My Residences</a>
-                    <a href="{{ route('resident-reports.index') }}" @class(['is-active' => request()->routeIs('resident-reports.*')])>My Reports</a>
+                    @php
+                        $responseNews = auth()->user()->unreadNotifications()->where('type', \App\Notifications\ResponseCaseUpdated::class)->count();
+                    @endphp
+                    <a href="{{ route('resident-reports.index') }}" @class(['is-active' => request()->routeIs('resident-reports.*')])>My Reports @if ($responseNews > 0)<span class="nav-count" title="New updates on your reports">{{ $responseNews }}</span>@endif</a>
                     <a href="{{ route('my-outage-reports.index') }}" @class(['is-active' => request()->routeIs('my-outage-reports.*')])>My Outage Reports</a>
                 @endif
             @endauth
 
             <a href="{{ route('front.alerts.index') }}" @class(['is-active' => request()->routeIs('front.alerts.*')])>Heat Alerts</a>
             <a href="{{ route('front.power-outages.index') }}" @class(['is-active' => request()->routeIs('front.power-outages.*')])>Power Outages</a>
-            <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
+            @unless (auth()->user()?->isManager())
+                <a href="{{ route('cool-spots.index') }}" @class(['is-active' => request()->routeIs('cool-spots.*')])>Cool Spots</a>
+            @endunless
             <a href="{{ route('advice.index') }}" @class(['is-active' => request()->routeIs('advice.*', 'assistant.index')])>Advice</a>
             <a href="{{ route('quizzes.index') }}" @class(['is-active' => request()->routeIs('quizzes.*')])>Challenge</a>
-            <a href="{{ route('pages.about') }}" @class(['is-active' => request()->routeIs('pages.about')])>About</a>
-
+            @guest
+                <a href="{{ route('pages.about') }}" @class(['is-active' => request()->routeIs('pages.about')])>About</a>
+            @endguest
         </nav>
 
         <div class="nav-actions">

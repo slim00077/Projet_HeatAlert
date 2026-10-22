@@ -19,7 +19,6 @@ class PowerOutageFactory extends Factory
     {
         return [
             'title' => 'District outage',
-            'area' => 'West district',
             'status' => 'in_progress',
             'severity' => 'high',
             'started_at' => now()->subHours(2),

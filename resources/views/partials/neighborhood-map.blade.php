@@ -1,6 +1,4 @@
-@push('head')
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-@endpush
+@include('partials.map-assets')
 
 <div class="map-toolbar">
     <button type="button" class="btn btn-primary btn-sm" id="map-report-toggle"><x-icon name="pin" /> Report a heat spot</button>
@@ -16,12 +14,10 @@
      data-authenticated="{{ auth()->check() ? '1' : '' }}"
      data-admin="{{ auth()->user()?->isAdmin() ? '1' : '' }}"
      data-login-url="{{ route('login') }}"
-     data-mapbox="{{ config('services.mapbox.token') }}"
      data-selected="{{ $selectedId ?? '' }}"
      data-detail-url="{{ $detailUrl ?? '' }}"></div>
 
 @push('scripts')
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         (function () {
             const element = document.getElementById('neighborhood-map');
@@ -32,30 +28,7 @@
             const isAdmin = element.dataset.admin === '1';
             const defaultHint = hint.textContent;
 
-            const map = L.map(element).setView([36.82, 10.2], 10);
-
-            const baseLayers = {
-                'Street (OpenStreetMap)': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19,
-                }),
-                'Satellite (Esri)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'Tiles &copy; Esri', maxZoom: 19,
-                }),
-                'Terrain (OpenTopoMap)': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenTopoMap, OpenStreetMap contributors', maxZoom: 17,
-                }),
-            };
-
-            if (element.dataset.mapbox) {
-                const mapbox = (style) => L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/{z}/{x}/{y}?access_token=${element.dataset.mapbox}`, {
-                    tileSize: 512, zoomOffset: -1, maxZoom: 22, attribution: '&copy; Mapbox &copy; OpenStreetMap',
-                });
-                baseLayers['Street (Mapbox)'] = mapbox('streets-v12');
-                baseLayers['Satellite (Mapbox)'] = mapbox('satellite-streets-v12');
-            }
-
-            baseLayers['Street (OpenStreetMap)'].addTo(map);
-            L.control.layers(baseLayers).addTo(map);
+            const map = HeatMap.create(element, { zoom: 10 });
 
             const zones = L.layerGroup().addTo(map);
             let neighborhoods = [];

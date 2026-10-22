@@ -1,10 +1,16 @@
-name: Publish image
+name: CD - Publish images
 
-# Builds the production image and pushes it to GitHub Container Registry
-# when CI passes on main (deploy the image with docker compose / any host).
+# Continuous delivery: builds the production images and pushes them to GitHub Container Registry.
+# It starts only after the CI workflow finished successfully on main, or when a version tag
+# (v1.0.0...) is pushed. Two images are published, the ones docker-compose.yml needs:
+#   ghcr.io/<owner>/<repository>       the PHP-FPM application (also runs the queue and scheduler)
+#   ghcr.io/<owner>/<repository>-web   the nginx web server
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
+  push:
     tags: ['v*']
 
 permissions:
@@ -13,9 +19,23 @@ permissions:
 
 jobs:
   publish:
+    name: Publish ${{ matrix.name }} image
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: app
+            target: app
+            suffix: ''
+          - name: web
+            target: web
+            suffix: '-web'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
@@ -25,16 +45,17 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ github.repository }}${{ matrix.suffix }}
           tags: |
-            type=ref,event=branch
+            type=raw,value=latest,enable=${{ github.event_name == 'workflow_run' }}
             type=ref,event=tag
-            type=sha
+            type=sha,format=short
       - uses: docker/build-push-action@v6
         with:
           context: .
+          target: ${{ matrix.target }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}

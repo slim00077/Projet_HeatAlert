@@ -47,7 +47,10 @@ return [
 
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-3.5-flash-lite'),
+        'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
+        'embedding_model' => env('GEMINI_EMBEDDING_MODEL', 'gemini-embedding-001'),
+        'similarity_threshold' => (float) env('GEMINI_SIMILARITY_THRESHOLD', 0.895),
+        'fallback_models' => array_values(array_filter(array_map('trim', explode(',', (string) env('GEMINI_FALLBACK_MODELS', 'gemini-flash-lite-latest'))))),
     ],
 
     // AI heat advisor (Claude). Without a key the advisor falls back to rule-based text.
@@ -59,7 +62,8 @@ return [
     'open_meteo' => [
         'url' => env('OPEN_METEO_URL', 'https://api.open-meteo.com/v1/forecast'),
         // Path to a CA bundle when PHP has no curl.cainfo configured (common on Windows).
-        'ca_bundle' => env('HTTP_CA_BUNDLE'),
+        // A path that does not exist is ignored (PHP's own curl.cainfo is used instead) rather than failing every HTTPS call.
+        'ca_bundle' => is_file((string) env('HTTP_CA_BUNDLE')) ? env('HTTP_CA_BUNDLE') : null,
     ],
 
 ];

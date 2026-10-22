@@ -2,7 +2,7 @@
 
 <div class="form-group @error('name') has-error @enderror">
     <label for="name">Name</label>
-    <input type="text" id="name" name="name" value="{{ old('name', $neighborhood->name) }}">
+    <input type="text" id="name" name="name" value="{{ old('name', $neighborhood->name) }}" required>
     <p class="field-hint">Must match the neighborhood typed on residences so residents can be notified.</p>
     @error('name')<p class="field-error">{{ $message }}</p>@enderror
 </div>
@@ -13,19 +13,13 @@
     @error('description')<p class="field-error">{{ $message }}</p>@enderror
 </div>
 
-<div class="form-row">
-    <div class="form-group @error('latitude') has-error @enderror">
-        <label for="latitude">Latitude</label>
-        <input type="number" step="any" id="latitude" name="latitude" value="{{ old('latitude', $neighborhood->latitude) }}">
-        @error('latitude')<p class="field-error">{{ $message }}</p>@enderror
-    </div>
-
-    <div class="form-group @error('longitude') has-error @enderror">
-        <label for="longitude">Longitude</label>
-        <input type="number" step="any" id="longitude" name="longitude" value="{{ old('longitude', $neighborhood->longitude) }}">
-        @error('longitude')<p class="field-error">{{ $message }}</p>@enderror
-    </div>
-</div>
+<x-location-picker
+    :latitude="$neighborhood->latitude"
+    :longitude="$neighborhood->longitude"
+    label="Neighborhood location"
+    hint="Search a place, or click the map to drop the centre of the neighborhood. Drag the marker to fine-tune it."
+    data-neighborhood-location-map
+/>
 
 <div class="form-row">
     <div class="form-group @error('population') has-error @enderror">

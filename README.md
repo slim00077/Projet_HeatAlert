@@ -179,7 +179,7 @@ On the first start the `app` container does everything by itself: it generates a
    |         +-- both pass -+--> 3. docker image build (check only, no push)     |
    +-----------------------------------------------------------------------------+
 
- PUSH to main  or  TAG v*   (starts at the same time as CI, see the note below)
+ CI succeeded on main  or  TAG v*   (CD never runs when CI fails)
                                 |
                                 v
    +----------------------------- deploy.yml  [CD] ------------------------------+
@@ -191,7 +191,7 @@ On the first start the `app` container does everything by itself: it generates a
 
 | Event | `ci.yml` (CI) | `deploy.yml` (CD) |
 |---|---|---|
-| Push to `main`, `develop`, `jasser`, `aziz`, `NizarChaieb` | Yes | Only on `main` |
+| Push to `main`, `develop`, `jasser`, `aziz`, `NizarChaieb` | Yes | Only on `main`, and only after CI succeeded |
 | Pull request into `main` or `develop` | Yes | No |
 | Tag starting with `v` (for example `v1.0.0`) | No | Yes |
 
@@ -231,24 +231,24 @@ Three jobs. `lint` and `tests` run in parallel on separate fresh Ubuntu machines
 
 #### `deploy.yml`: Continuous Delivery (CD)
 
-One job, `publish`. It needs `packages: write` permission to push to the registry, and uses the automatic `GITHUB_TOKEN`, so no password is stored in the repository.
+CD starts only after the `CI` workflow finished **successfully** on `main` (trigger `workflow_run`), or when a version tag such as `v1.0.0` is pushed. If CI fails, nothing is published. One job, `publish`, runs twice in parallel (a matrix): once for the application image and once for the nginx web image, the two images `docker-compose.yml` needs. It needs `packages: write` permission to push to the registry, and uses the automatic `GITHUB_TOKEN`, so no password is stored in the repository.
 
 | Step | What it does |
 |---|---|
-| Checkout | Downloads the code of the commit or tag being released. |
+| Checkout | Downloads the exact commit that passed CI (or the tagged commit). |
 | Setup Buildx | Enables the Docker build engine with caching. |
 | Login to `ghcr.io` | Authenticates to the GitHub Container Registry as the user who pushed. |
-| Compute image name and tags | Builds the image name `ghcr.io/<owner>/<repository>` and its tags: the branch name (for example `main`), the git tag (for example `v1.0.0`) and the short commit SHA. |
-| Build and push (`push: true`) | Builds the production image and uploads it to the registry with those tags. |
+| Compute image name and tags | Names the image `ghcr.io/<owner>/<repository>` (application) or `ghcr.io/<owner>/<repository>-web` (nginx). Tags: `latest` (after a CI success on `main`), the git tag (for example `v1.0.0`) and the short commit SHA. |
+| Build and push (`push: true`) | Builds the matching Dockerfile stage and uploads it to the registry with those tags. |
 
-The result is a versioned image that can be started on any machine with Docker: `docker pull ghcr.io/<owner>/<repository>:main`.
+The result is two versioned images that start on any machine with Docker: `docker pull ghcr.io/<owner>/<repository>:latest` and `docker pull ghcr.io/<owner>/<repository>-web:latest`. In the GitHub repository they appear under **Packages**.
 
 #### What is and is not automated
 
 - **Automated, CI:** code style, the full test suite and a Docker build on every push and pull request.
 - **Automated, CD:** building and publishing the production image when code reaches `main` or a version tag.
 - **Not automated:** starting the new image on a server. That step needs a host and secrets, so it is done by hand with Docker Compose (see "Docker architecture" above).
-- **Note:** `deploy.yml` starts at the same time as CI on a push to `main`. It does not wait for CI to finish. In practice code reaches `main` through `develop`, where CI has already passed, but the publish step is not blocked by a CI failure.
+- **Gate:** CD is chained to CI, so a red CI never produces an image.
 
 **Composer platform pin:** `composer.json` fixes the platform to PHP 8.2. Dependencies are resolved for that version, so `composer install` works the same on every machine and in CI, even when a developer runs a newer PHP.
 

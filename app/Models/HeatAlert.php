@@ -60,16 +60,25 @@ class HeatAlert extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Neighborhood, $this>
+     */
     public function neighborhood(): BelongsTo
     {
         return $this->belongsTo(Neighborhood::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * @param  Builder<HeatAlert>  $query
+     */
     public function scopeActive(Builder $query): void
     {
         $query->where('start_date', '<=', now())
@@ -79,6 +88,9 @@ class HeatAlert extends Model
     /**
      * Active high-severity alerts from trusted sources (community reports never raise the banner).
      */
+    /**
+     * @param  Builder<HeatAlert>  $query
+     */
     public function scopeDanger(Builder $query): void
     {
         $query->active()
@@ -86,11 +98,17 @@ class HeatAlert extends Model
             ->where('source', '!=', self::SOURCE_COMMUNITY);
     }
 
+    /**
+     * @param  Builder<HeatAlert>  $query
+     */
     public function scopeUpcoming(Builder $query): void
     {
         $query->where('start_date', '>', now());
     }
 
+    /**
+     * @param  Builder<HeatAlert>  $query
+     */
     public function scopeExpired(Builder $query): void
     {
         $query->where('end_date', '<', now());
@@ -99,6 +117,9 @@ class HeatAlert extends Model
     /**
      * Alerts that are running or still to come (everything that is not expired).
      */
+    /**
+     * @param  Builder<HeatAlert>  $query
+     */
     public function scopeCurrentOrUpcoming(Builder $query): void
     {
         $query->where(fn (Builder $q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()));
@@ -106,6 +127,9 @@ class HeatAlert extends Model
 
     /**
      * Alerts whose period intersects the given one (an open-ended period has no $end).
+     */
+    /**
+     * @param  Builder<HeatAlert>  $query
      */
     public function scopeOverlapping(Builder $query, CarbonInterface $start, ?CarbonInterface $end = null): void
     {

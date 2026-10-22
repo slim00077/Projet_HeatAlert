@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CoolSpotRequest;
 use App\Models\CoolSpot;
 use App\Models\CoolSpotType;
+use App\Services\CoolSpotAiService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CoolSpotController extends Controller
@@ -29,6 +31,23 @@ class CoolSpotController extends Controller
         $types = CoolSpotType::orderBy('name')->get();
 
         return view('back.cool-spots.create', compact('types'));
+    }
+
+    public function generateDescription(Request $request, CoolSpotAiService $advisor): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'type' => ['required', 'string', 'max:100'],
+            'address' => ['required', 'string', 'max:255'],
+            'is_accessible' => ['sometimes', 'boolean'],
+        ]);
+
+        return response()->json($advisor->generateDescription(
+            $data['name'],
+            $data['type'],
+            $data['address'],
+            $request->boolean('is_accessible'),
+        ));
     }
 
     public function store(CoolSpotRequest $request)

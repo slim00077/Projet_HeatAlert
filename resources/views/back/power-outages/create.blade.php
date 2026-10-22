@@ -3,16 +3,16 @@
 @section('title', 'Create power outage - Admin')
 
 @section('content')
-    <div class="page-shell">
-        <div class="page-header">
-            <div>
-                <span class="eyebrow">Power outages</span>
-                <h1>Create outage</h1>
-            </div>
+    <div class="page-header">
+        <div>
+            <h1>Create outage</h1>
+            <p class="subtitle">Announce a planned or ongoing power interruption and the neighborhoods it affects</p>
         </div>
-
-        <form action="{{ route('admin.power-outages.store') }}" method="POST" class="panel-form">
-            @include('back.power-outages.partials.form', ['powerOutage' => $powerOutage, 'submitLabel' => 'Create outage'])
-        </form>
     </div>
+
+    <x-flash-messages />
+
+    <form action="{{ route('admin.power-outages.store') }}" method="POST" class="form-card form-card-wide" novalidate data-outage-form>
+        @include('back.power-outages.partials.form', ['powerOutage' => $powerOutage, 'submitLabel' => 'Create outage'])
+    </form>
 @endsection

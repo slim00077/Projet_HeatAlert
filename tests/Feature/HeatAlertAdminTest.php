@@ -107,6 +107,11 @@ it('manages neighborhoods and enforces unique names', function () {
         ->post(route('admin.neighborhoods.store'), ['name' => 'La Marsa', 'latitude' => 36.87, 'longitude' => 10.32, 'population' => 1000, 'vulnerable_population' => 100])
         ->assertRedirect();
 
+    $createdNeighborhood = Neighborhood::where('name', 'La Marsa')->firstOrFail();
+
+    expect($createdNeighborhood->latitude)->toBe(36.87);
+    expect($createdNeighborhood->longitude)->toBe(10.32);
+
     $this->actingAs($this->admin)
         ->post(route('admin.neighborhoods.store'), ['name' => 'La Marsa'])
         ->assertSessionHasErrors('name');
@@ -116,6 +121,24 @@ it('manages neighborhoods and enforces unique names', function () {
     $this->actingAs($this->admin)
         ->put(route('admin.neighborhoods.update', $neighborhood), ['name' => 'La Marsa']) // own name is fine
         ->assertSessionDoesntHaveErrors();
+});
+
+it('shows a map picker instead of editable coordinates on neighborhood forms', function () {
+    $this->actingAs($this->admin)
+        ->get(route('admin.neighborhoods.create'))
+        ->assertOk()
+        ->assertSee('data-neighborhood-location-map', false)
+        ->assertSee('name="latitude"', false)
+        ->assertSee('name="longitude"', false)
+        ->assertDontSee('type="number" step="any" id="latitude"', false)
+        ->assertDontSee('type="number" step="any" id="longitude"', false);
+
+    $this->actingAs($this->admin)
+        ->get(route('admin.neighborhoods.edit', $this->neighborhood))
+        ->assertOk()
+        ->assertSee('data-neighborhood-location-map', false)
+        ->assertSee('data-latitude="'.$this->neighborhood->latitude.'"', false)
+        ->assertSee('data-longitude="'.$this->neighborhood->longitude.'"', false);
 });
 
 it('shows the current risk of a neighborhood from its active alerts', function () {

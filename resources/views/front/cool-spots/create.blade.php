@@ -12,7 +12,7 @@
 
         <x-flash-messages />
 
-        <form action="{{ route('cool-spots.store') }}" method="POST" class="form-card">
+        <form action="{{ route('cool-spots.store') }}" method="POST" class="form-card cool-spot-form">
             @include('back.cool-spots._form', ['coolSpot' => null])
 
             <div class="form-actions">

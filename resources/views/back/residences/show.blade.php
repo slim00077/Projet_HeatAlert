@@ -34,36 +34,12 @@
 @include('partials.residence-members')
 
 <div class="page-header" style="margin-top: 1.5rem">
-    <h2>Reports</h2>
+    <h2>Reports &amp; incident response</h2>
     <a href="{{ route('resident-reports.create', ['residence_id' => $residence->id]) }}" class="btn btn-primary">Add Report</a>
 </div>
 
-<table class="data-table">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Status</th>
-            <th>Reported at</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse ($residence->residentReports as $report)
-            <tr>
-                <td>{{ $report->title }}</td>
-                <td><x-status-badge :status="$report->status" /></td>
-                <td>{{ $report->reported_at->format('Y-m-d') }}</td>
-                <td class="actions">
-                    <a href="{{ route('resident-reports.show', $report) }}">View</a>
-                    <a href="{{ route('resident-reports.edit', $report) }}">Edit</a>
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="4">No reports for this residence.</td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
+@include('partials.command-center.residence-panel')
+
+@include('partials.residence-reports')
 
 @endsection
