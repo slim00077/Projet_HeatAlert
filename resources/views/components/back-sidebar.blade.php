@@ -18,7 +18,11 @@
         <a href="{{ route('resident-reports.index') }}" @class(['is-active' => request()->routeIs('resident-reports.*')])><x-icon name="file" /> Reports</a>
         <p class="sidebar-group">Heat</p>
         <a href="{{ route('admin.neighborhoods.index') }}" @class(['is-active' => request()->routeIs('admin.neighborhoods.*')])><x-icon name="home" /> Neighborhoods</a>
-        <a href="{{ route('admin.alerts.index') }}" @class(['is-active' => request()->routeIs('admin.alerts.*')])><x-icon name="warning" /> Heat Alerts</a>
+        <a href="{{ route('admin.alerts.index') }}" @class(['is-active' => request()->routeIs('admin.alerts.*')])><x-icon name="warning" /> Heat Alerts
+            @if (($pendingReports = \App\Models\HeatAlert::pendingReview()->count()) > 0)
+                <span class="nav-count" title="Resident reports waiting for approval">{{ $pendingReports }}</span>
+            @endif
+        </a>
         <p class="sidebar-group">Cooling</p>
         <a href="{{ route('admin.cool-spots.index') }}" @class(['is-active' => request()->routeIs('admin.cool-spots.*')])><x-icon name="snow" /> Cooling Points</a>
         <a href="{{ route('admin.cool-spot-types.index') }}" @class(['is-active' => request()->routeIs('admin.cool-spot-types.*')])><x-icon name="grid" /> Cooling Types</a>

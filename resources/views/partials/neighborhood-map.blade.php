@@ -1,8 +1,10 @@
 @include('partials.map-assets')
 
 <div class="map-toolbar">
-    <button type="button" class="btn btn-primary btn-sm" id="map-report-toggle"><x-icon name="pin" /> Report a heat spot</button>
-    <span class="map-hint" id="map-hint">Click a zone for its temperatures and residences, or report a heat spot on the map.</span>
+    @unless (auth()->user()?->isAdmin())
+        <button type="button" class="btn btn-primary btn-sm" id="map-report-toggle"><x-icon name="pin" /> Report a heat spot</button>
+    @endunless
+    <span class="map-hint" id="map-hint">{{ auth()->user()?->isAdmin() ? 'Click a zone for its temperatures and residences.' : 'Click a zone for its temperatures and residences, or report a heat spot on the map.' }}</span>
 </div>
 
 <div id="map-message" class="flash flash-success" style="display:none"></div>
@@ -203,12 +205,12 @@
             function stopPicking() {
                 picking = false;
                 element.classList.remove('is-picking');
-                toggle.textContent = 'Report a heat spot';
+                if (toggle) { toggle.textContent = 'Report a heat spot'; }
                 hint.textContent = defaultHint;
                 if (pickMarker) { map.removeLayer(pickMarker); pickMarker = null; }
             }
 
-            toggle.addEventListener('click', () => {
+            toggle?.addEventListener('click', () => {
                 if (picking) { stopPicking(); return; }
                 picking = true;
                 element.classList.add('is-picking');

@@ -7,18 +7,67 @@
 <div class="page-header">
     <div>
         <h1>Heat Alerts</h1>
-        <p class="subtitle">Create and follow heat alerts by neighborhood</p>
+        <p class="subtitle">Follow heat alerts by neighborhood and review the reports sent by residents</p>
     </div>
     <div class="toolbar">
         <form action="{{ route('admin.weather.sync') }}" method="POST">
             @csrf
             <button type="submit" class="btn btn-outline"><x-icon name="sun" /> Refresh weather</button>
         </form>
-        <a href="{{ route('admin.alerts.create') }}" class="btn btn-primary"><x-icon name="plus" /> Add Alert</a>
     </div>
 </div>
 
 <x-flash-messages />
+
+<section class="panel review-queue" aria-labelledby="review-queue-title">
+    <div class="panel-head">
+        <h2 id="review-queue-title">Resident reports to review @if ($pendingReports->isNotEmpty())<span class="nav-count">{{ $pendingReports->count() }}</span>@endif</h2>
+    </div>
+
+    @if ($pendingReports->isEmpty())
+        <p class="empty-state">No report is waiting for approval.</p>
+    @else
+        <div class="table-card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Report</th>
+                        <th>Neighborhood</th>
+                        <th>Severity</th>
+                        <th>Reported by</th>
+                        <th>Sent</th>
+                        <th>Decision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($pendingReports as $report)
+                        <tr>
+                            <td class="wrap">
+                                <a href="{{ route('admin.alerts.show', $report) }}">{{ $report->title }}</a>
+                                @if ($report->temperature !== null)<small>({{ $report->temperature }} °C)</small>@endif
+                                @if ($report->description)<br><small>{{ $report->description }}</small>@endif
+                            </td>
+                            <td>{{ $report->neighborhood->name }}</td>
+                            <td><x-severity-badge :severity="$report->severity_level" /></td>
+                            <td>{{ $report->creator?->name ?? 'Deleted user' }}</td>
+                            <td>{{ $report->created_at->diffForHumans() }}</td>
+                            <td class="actions">
+                                <form action="{{ route('admin.alerts.approve', $report) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-sm"><x-icon name="check" /> Approve</button>
+                                </form>
+                                <form action="{{ route('admin.alerts.reject', $report) }}" method="POST" onsubmit="return confirm('Reject this report?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline btn-sm">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+</section>
 
 @include('partials.neighborhood-map', ['detailUrl' => route('admin.neighborhoods.show', '__ID__')])
 
@@ -87,12 +136,6 @@
                     <td>{{ $alert->end_date?->format('d/m/Y H:i') ?? '-' }}</td>
                     <td class="actions">
                         <a href="{{ route('admin.alerts.show', $alert) }}" class="icon-action" title="View"><x-icon name="eye" /></a>
-                        <a href="{{ route('admin.alerts.edit', $alert) }}" class="icon-action is-edit" title="Edit"><x-icon name="pencil" /></a>
-                        <form action="{{ route('admin.alerts.destroy', $alert) }}" method="POST" onsubmit="return confirm('Delete this heat alert?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="icon-action is-danger" title="Delete"><x-icon name="trash" /></button>
-                        </form>
                     </td>
                 </tr>
             @empty

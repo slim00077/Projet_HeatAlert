@@ -21,4 +21,5 @@ services:
       - { key: QUEUE_CONNECTION, value: database }
       - { key: CACHE_STORE, value: database }
       - { key: MAIL_MAILER, value: log }
+      - { key: RUN_DEMO_SEED, value: "true" }
       - { key: GEMINI_API_KEY, sync: false }

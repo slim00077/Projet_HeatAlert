@@ -13,7 +13,6 @@
         </p>
     </div>
     <div class="toolbar">
-        <a href="{{ route('admin.alerts.edit', $heatAlert) }}" class="btn btn-outline">Edit</a>
         <a href="{{ route('admin.alerts.index') }}" class="btn btn-outline">Back</a>
     </div>
 </div>

@@ -121,7 +121,7 @@ class DashboardController extends Controller
     {
         $first = now()->startOfMonth()->subMonths($months - 1);
 
-        $counts = HeatAlert::where('start_date', '>=', $first)
+        $counts = HeatAlert::approved()->where('start_date', '>=', $first)
             ->pluck('start_date')
             ->countBy(fn ($date) => $date->format('Y-m'));
 
