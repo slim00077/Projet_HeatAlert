@@ -13,6 +13,13 @@
                 <p class="advice-summary">{{ $advice->summary }}</p>
             @endif
             <div class="advice-content">{{ $advice->content }}</div>
+            @if ($advice->source_url)
+                <p class="advice-source">
+                    <strong>Submitted reference:</strong>
+                    <a href="{{ $advice->source_url }}" target="_blank" rel="noopener noreferrer">{{ $advice->source_url }}</a>
+                    <small>This source link is provided for reference and is not independently verified.</small>
+                </p>
+            @endif
             <a href="{{ route('advice.index') }}" class="btn btn-outline"><x-icon name="arrow" /> Back to advice</a>
         </article>
 

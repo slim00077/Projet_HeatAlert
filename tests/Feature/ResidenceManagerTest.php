@@ -176,18 +176,36 @@ it('only counts approved residences and members for map data and notifications',
     Notification::assertNotSentTo($pendingOwner, HeatAlertIssued::class);
 });
 
-it('shows each role the right navigation tabs', function () {
-    $this->get('/')->assertDontSee('My Residences')->assertDontSee('Managed Residences')->assertSee('Heat Alerts')->assertSee('Login');
+function navigationTabs($response): array
+{
+    preg_match('/<header class="site-header.*?<\/header>/s', $response->getContent(), $header);
+    preg_match_all('/<(?:a|button|span class="role-pill")(?:\s[^>]*)?>(.*?)<\/(?:a|button|span)>/s', $header[0] ?? '', $items);
 
-    $this->actingAs($this->resident)->get('/')
-        ->assertSee('My Residences')->assertSee('My Reports')->assertDontSee('Managed Residences')->assertDontSee('>Admin');
+    return array_values(array_filter(array_map(
+        fn (string $item) => trim(preg_replace('/\s*\d*$/', '', trim(preg_replace('/\s+/', ' ', strip_tags($item))))),
+        $items[1],
+    )));
+}
 
-    $this->actingAs($this->manager)->get('/')
-        ->assertSee('Managed Residences')->assertDontSee('My Reports')->assertDontSee('My Residences');
+it('shows each role its own navigation tabs', function () {
+    $guest = navigationTabs($this->get('/'));
+    expect($guest)->toContain('Home', 'Heat Alerts', 'Power Outages', 'Cool Spots', 'Advice', 'About', 'Login', 'Register')
+        ->not->toContain('My Residences', 'Managed Residences', 'Command Center', 'Logout');
+
+    $resident = navigationTabs($this->actingAs($this->resident)->get('/'));
+    expect($resident)->toContain('Home', 'Heat Alerts', 'Power Outages', 'Cool Spots', 'Advice', 'My Residences', 'My Reports', 'My Outage Reports', 'Resident', 'Logout')
+        ->not->toContain('About', 'Managed Residences', 'Command Center', 'Login');
+
+    $manager = navigationTabs($this->actingAs($this->manager)->get('/'));
+    expect($manager)->toContain('Home', 'Managed Residences', 'Command Center', 'My Outage Reports', 'Heat Alerts', 'Power Outages', 'Advice', 'Manager', 'Logout')
+        ->not->toContain('Cool Spots', 'About', 'My Residences', 'My Reports');
 
     Residence::factory()->pending()->create(['user_id' => $this->manager->id]);
-    $this->actingAs($this->admin)->get('/')
-        ->assertSee('Admin')->assertDontSee('My Residences')->assertDontSee('Managed Residences')->assertDontSee('My Reports');
+    $admin = navigationTabs($this->actingAs($this->admin)->get('/'));
+    expect($admin)->toContain('Home', 'Heat Alerts', 'Power Outages', 'Cool Spots', 'Advice', 'Logout')
+        ->and(implode(' ', $admin))->toContain('Admin')
+        ->and($admin)->not->toContain('About', 'My Residences', 'Managed Residences', 'My Reports', 'My Outage Reports');
 
-    $this->actingAs($this->admin)->get(route('admin.dashboard'))->assertSee('Approvals')->assertSee('Neighborhoods');
+    $this->actingAs($this->admin)->get(route('admin.dashboard'))
+        ->assertSee('Approvals')->assertSee('Neighborhoods')->assertSee('class="sidebar-group"', false);
 });
